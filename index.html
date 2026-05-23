@@ -29,15 +29,14 @@ body { font-family: var(--sans); background: var(--bg); color: var(--text);
 
 /* HEADER */
 .header { display:flex; align-items:center; justify-content:space-between;
-  padding:16px 18px 12px; padding-top:calc(16px + env(safe-area-inset-top));
-  flex-shrink:0; }
+  padding:16px 18px 12px; padding-top:calc(16px + env(safe-area-inset-top)); flex-shrink:0; }
 .header-left { display:flex; flex-direction:column; gap:2px; }
-.portfolio-title { font-size:20px; font-weight:700; letter-spacing:-0.4px; }
+.portfolio-title { font-size:20px; font-weight:700; letter-spacing:-0.4px; cursor:pointer; }
+.portfolio-title:hover { color: var(--accent2); }
 .header-sub { font-family:var(--mono); font-size:11px; color:var(--muted); }
 .header-btns { display:flex; align-items:center; gap:14px; }
 .btn-hdr { background:none; border:none; cursor:pointer; color:var(--muted);
-  line-height:1; padding:4px; transition:color .15s; display:flex;
-  align-items:center; justify-content:center; }
+  line-height:1; padding:4px; transition:color .15s; display:flex; align-items:center; }
 .btn-hdr:hover { color:var(--text); }
 .btn-hdr.editing { color:var(--accent2); }
 .btn-hdr svg { width:20px; height:20px; }
@@ -56,32 +55,24 @@ body { font-family: var(--sans); background: var(--bg); color: var(--text);
 
 /* STOCK ROW */
 .stock-row { display:flex; align-items:center; gap:13px; padding:9px 10px;
-  border-radius:14px; min-height:var(--row-h); user-select:none; position:relative;
-  transition:background .12s; }
+  border-radius:14px; min-height:var(--row-h); user-select:none; transition:background .12s; }
 .stock-row:active { background:var(--card); }
 .stock-row.dragging { opacity:.35; }
 .stock-row.drag-over { background:rgba(124,106,247,0.1); }
 .avatar { width:40px; height:40px; border-radius:50%; display:flex;
-  align-items:center; justify-content:center; font-size:16px; font-weight:700;
-  flex-shrink:0; color:#fff; }
+  align-items:center; justify-content:center; font-size:16px; font-weight:700; flex-shrink:0; color:#fff; }
 .row-info { flex:1; min-width:0; }
-.row-name { font-size:14px; font-weight:600; white-space:nowrap; overflow:hidden;
-  text-overflow:ellipsis; line-height:1.25; }
+.row-name { font-size:14px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.25; }
 .row-sym { font-family:var(--mono); font-size:11px; color:var(--muted); margin-top:1px; }
 .row-price { text-align:right; flex-shrink:0; }
-.row-value { font-family:var(--mono); font-size:15px; font-weight:500;
-  letter-spacing:-0.02em; line-height:1.25; }
+.row-value { font-family:var(--mono); font-size:15px; font-weight:500; letter-spacing:-0.02em; line-height:1.25; }
 .row-change { font-family:var(--mono); font-size:11px; margin-top:2px; }
-.row-change.pos { color:var(--green); }
-.row-change.neg { color:var(--red); }
-.row-change.flat { color:var(--muted); }
-.drag-handle { display:none; color:var(--muted); font-size:18px; padding:4px;
-  cursor:grab; flex-shrink:0; touch-action:none; align-items:center; }
+.row-change.pos { color:var(--green); } .row-change.neg { color:var(--red); } .row-change.flat { color:var(--muted); }
+.drag-handle { display:none; color:var(--muted); font-size:18px; padding:4px; cursor:grab; flex-shrink:0; touch-action:none; align-items:center; }
 .drag-handle:active { cursor:grabbing; }
 .edit-mode .drag-handle { display:flex; }
 .btn-del { display:none; background:var(--red-bg); border:1px solid rgba(232,80,74,0.25);
-  border-radius:8px; color:var(--red); font-size:11px; font-family:var(--mono);
-  padding:5px 9px; cursor:pointer; flex-shrink:0; }
+  border-radius:8px; color:var(--red); font-size:11px; font-family:var(--mono); padding:5px 9px; cursor:pointer; flex-shrink:0; }
 .edit-mode .btn-del { display:block; }
 
 /* SKELETON */
@@ -94,131 +85,132 @@ body { font-family: var(--sans); background: var(--bg); color: var(--text);
 .empty .big { font-size:40px;margin-bottom:12px; }
 .empty p { font-size:14px;line-height:1.6; }
 
-/* OVERLAY */
-.sheet-overlay { position:fixed;inset:0;z-index:50;background:rgba(0,0,0,0.55);
+/* OVERLAY + SHEET */
+.overlay { position:fixed;inset:0;z-index:50;background:rgba(0,0,0,0.6);
   opacity:0;pointer-events:none;transition:opacity .3s; }
-.sheet-overlay.open { opacity:1;pointer-events:all; }
-
-/* BOTTOM SHEET */
-.bottom-sheet { position:fixed;left:0;right:0;bottom:0;z-index:60;
-  background:var(--card2); border-radius:22px 22px 0 0;
-  padding:0 0 calc(20px + env(safe-area-inset-bottom));
-  transform:translateY(100%); transition:transform .35s cubic-bezier(.32,.72,0,1);
-  max-height:92dvh; display:flex; flex-direction:column; }
-.bottom-sheet.open { transform:translateY(0); }
-.sheet-handle { width:36px;height:4px;background:rgba(255,255,255,0.15);
-  border-radius:2px;margin:12px auto 0;flex-shrink:0; }
+.overlay.open { opacity:1;pointer-events:all; }
+.sheet { position:fixed;left:0;right:0;bottom:0;z-index:60;background:var(--card2);
+  border-radius:22px 22px 0 0; padding:0 0 calc(20px + env(safe-area-inset-bottom));
+  transform:translateY(100%);transition:transform .35s cubic-bezier(.32,.72,0,1);
+  max-height:92dvh;display:flex;flex-direction:column; }
+.sheet.open { transform:translateY(0); }
+.sheet-handle { width:36px;height:4px;background:rgba(255,255,255,0.15);border-radius:2px;margin:12px auto 0;flex-shrink:0; }
 .sheet-title { font-size:16px;font-weight:700;padding:14px 18px 10px;flex-shrink:0; }
 
-/* SEARCH BOX */
-.search-box { padding:0 18px 10px; flex-shrink:0; position:relative; }
-.search-icon { position:absolute;left:30px;top:50%;transform:translateY(-50%);
-  color:var(--muted); pointer-events:none; }
+/* ADD SHEET */
+.search-box { padding:0 18px 10px;flex-shrink:0;position:relative; }
+.search-icon { position:absolute;left:30px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none; }
 .search-icon svg { width:16px;height:16px; }
-.sheet-input { width:100%; background:rgba(255,255,255,0.07);
-  border:1px solid var(--border2); border-radius:14px;
-  padding:11px 14px 11px 40px; color:var(--text);
-  font-family:var(--sans); font-size:15px; outline:none; }
+.sheet-input { width:100%;background:rgba(255,255,255,0.07);border:1px solid var(--border2);
+  border-radius:14px;padding:11px 14px 11px 40px;color:var(--text);font-family:var(--sans);font-size:15px;outline:none; }
 .sheet-input::placeholder { color:var(--muted); }
 .sheet-input:focus { border-color:var(--accent); }
-
-/* SEARCH RESULTS */
-.search-results { flex-shrink:0; max-height:260px; overflow-y:auto;
-  scrollbar-width:none; margin:0 10px; }
+.search-results { flex-shrink:0;max-height:240px;overflow-y:auto;scrollbar-width:none;margin:0 10px; }
 .search-results::-webkit-scrollbar { display:none; }
-.result-row { display:flex;align-items:center;gap:12px;padding:10px 10px;
-  border-radius:12px; cursor:pointer; transition:background .12s; }
-.result-row:hover, .result-row:active { background:rgba(124,106,247,0.1); }
-.result-avatar { width:36px;height:36px;border-radius:50%;display:flex;
-  align-items:center;justify-content:center;font-size:14px;font-weight:700;
-  flex-shrink:0;color:#fff; }
+.result-row { display:flex;align-items:center;gap:12px;padding:10px;border-radius:12px;cursor:pointer;transition:background .12s; }
+.result-row:hover { background:rgba(124,106,247,0.1); }
+.result-avatar { width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;color:#fff; }
 .result-info { flex:1;min-width:0; }
 .result-name { font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
 .result-sym { font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:1px; }
-.result-add { background:var(--accent);border:none;border-radius:8px;padding:5px 12px;
-  color:#fff;font-size:12px;font-weight:600;cursor:pointer;flex-shrink:0; }
+.result-add { background:var(--accent);border:none;border-radius:8px;padding:5px 12px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;flex-shrink:0; }
 .result-add.added { background:var(--green-bg);color:var(--green);border:1px solid rgba(34,201,122,0.3); }
 .search-hint { padding:10px 18px;font-family:var(--mono);font-size:11px;color:var(--muted);text-align:center; }
-.search-loading { padding:14px 18px;text-align:center; }
-.search-loading span { display:inline-block;width:6px;height:6px;border-radius:50%;
-  background:var(--muted);animation:dot 1.2s infinite;margin:0 2px; }
-.search-loading span:nth-child(2){animation-delay:.2s}
-.search-loading span:nth-child(3){animation-delay:.4s}
+.search-loading { padding:14px;text-align:center; }
+.search-loading span { display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--muted);animation:dot 1.2s infinite;margin:0 2px; }
+.search-loading span:nth-child(2){animation-delay:.2s} .search-loading span:nth-child(3){animation-delay:.4s}
 @keyframes dot{0%,80%,100%{opacity:.2}40%{opacity:1}}
-
-/* DIVIDER */
 .sheet-divider { height:1px;background:var(--border);margin:4px 18px 10px;flex-shrink:0; }
-
-/* TABS */
-.sheet-tabs { display:flex;overflow-x:auto;scrollbar-width:none;
-  padding:0 18px 10px;gap:6px;flex-shrink:0; }
+.sheet-tabs { display:flex;overflow-x:auto;scrollbar-width:none;padding:0 18px 10px;gap:6px;flex-shrink:0; }
 .sheet-tabs::-webkit-scrollbar { display:none; }
-.stab { background:rgba(255,255,255,0.06);border:1px solid var(--border2);
-  border-radius:20px;padding:5px 13px;font-family:var(--mono);font-size:11px;
-  color:var(--muted);cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .15s; }
+.stab { background:rgba(255,255,255,0.06);border:1px solid var(--border2);border-radius:20px;padding:5px 13px;
+  font-family:var(--mono);font-size:11px;color:var(--muted);cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .15s; }
 .stab.active { background:rgba(124,106,247,0.18);border-color:var(--accent);color:var(--accent2); }
-
-/* CHIPS */
-.sheet-chips { display:flex;flex-wrap:wrap;gap:6px;padding:0 18px 8px;
-  overflow-y:auto;flex:1;scrollbar-width:none;align-content:flex-start; }
+.sheet-chips { display:flex;flex-wrap:wrap;gap:6px;padding:0 18px 8px;overflow-y:auto;flex:1;scrollbar-width:none;align-content:flex-start; }
 .sheet-chips::-webkit-scrollbar { display:none; }
-.chip { background:rgba(255,255,255,0.05);border:1px solid var(--border2);
-  border-radius:20px;padding:5px 13px;font-family:var(--mono);font-size:12px;
-  color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap; }
+.chip { background:rgba(255,255,255,0.05);border:1px solid var(--border2);border-radius:20px;padding:5px 13px;
+  font-family:var(--mono);font-size:12px;color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap; }
 .chip:hover { border-color:var(--accent);color:var(--accent2); }
 .chip.added { border-color:rgba(34,201,122,0.4);color:var(--green); }
 
-/* WORKER SETUP */
+/* ── PORTFOLIO SHEET ── */
+.pf-section { padding:0 18px 12px;flex-shrink:0; }
+.pf-section-title { font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px; }
+.pf-input-row { display:flex;gap:8px;margin-bottom:10px; }
+.pf-input { flex:1;background:rgba(255,255,255,0.07);border:1px solid var(--border2);border-radius:10px;
+  padding:10px 13px;color:var(--text);font-family:var(--sans);font-size:14px;outline:none;min-width:0; }
+.pf-input:focus { border-color:var(--accent); }
+.pf-input::placeholder { color:var(--muted);font-size:13px; }
+.btn-pf { background:var(--accent);border:none;border-radius:10px;padding:10px 16px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap; }
+.btn-pf.secondary { background:rgba(255,255,255,0.07);color:var(--text); }
+.btn-pf.danger { background:var(--red-bg);color:var(--red);border:1px solid rgba(232,80,74,0.3); }
+
+.pf-list { display:flex;flex-direction:column;gap:8px;padding:0 18px;overflow-y:auto;flex:1;scrollbar-width:none; }
+.pf-list::-webkit-scrollbar { display:none; }
+.pf-card { background:rgba(255,255,255,0.05);border:1px solid var(--border2);border-radius:14px;padding:14px 16px;
+  display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .15s; }
+.pf-card:hover { border-color:var(--accent);background:rgba(124,106,247,0.08); }
+.pf-card.active-pf { border-color:var(--green);background:rgba(34,201,122,0.08); }
+.pf-card-icon { width:40px;height:40px;border-radius:12px;background:rgba(124,106,247,0.2);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0; }
+.pf-card-info { flex:1;min-width:0; }
+.pf-card-name { font-size:15px;font-weight:600; }
+.pf-card-meta { font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:2px; }
+.pf-card-badge { font-family:var(--mono);font-size:10px;background:var(--green-bg);color:var(--green);border-radius:6px;padding:2px 8px;flex-shrink:0; }
+.pf-sep { height:1px;background:var(--border);margin:8px 18px;flex-shrink:0; }
+.pf-hint { font-family:var(--mono);font-size:11px;color:var(--muted);text-align:center;padding:16px; }
+
+/* ── SETUP WORKER ── */
 .worker-setup { padding:10px 18px 12px;flex-shrink:0; }
 .worker-setup p { font-family:var(--mono);font-size:11px;color:var(--red);line-height:1.7;margin-bottom:8px; }
 .worker-setup a { color:var(--accent2); }
 .worker-setup code { background:rgba(255,255,255,0.08);padding:1px 5px;border-radius:3px; }
 .worker-row { display:flex;gap:8px; }
-.worker-input { flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(232,80,74,0.4);
-  border-radius:10px;padding:9px 12px;color:var(--text);font-family:var(--mono);
-  font-size:12px;outline:none;min-width:0; }
+.worker-input { flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(232,80,74,0.4);border-radius:10px;
+  padding:9px 12px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;min-width:0; }
 .worker-input:focus { border-color:var(--accent); }
-.worker-btn { background:var(--accent);border:none;border-radius:10px;padding:9px 14px;
-  color:#fff;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap; }
+.worker-btn { background:var(--accent);border:none;border-radius:10px;padding:9px 14px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap; }
 
-/* TOAST */
-.toast { position:fixed;bottom:80px;left:50%;
-  transform:translateX(-50%) translateY(80px);
-  background:#222233;border:1px solid var(--border2);border-radius:10px;
-  padding:9px 18px;font-family:var(--mono);font-size:12px;color:var(--text);
-  transition:transform .3s;z-index:200;white-space:nowrap;pointer-events:none; }
-.toast.show { transform:translateX(-50%) translateY(0); }
-
-/* ── INSTALL MODAL ── */
-.install-modal { position:fixed; inset:0; z-index:200; display:flex;
-  align-items:flex-end; justify-content:center;
-  background:rgba(0,0,0,0.6); opacity:0; pointer-events:none; transition:opacity .3s; }
-.install-modal.open { opacity:1; pointer-events:all; }
-.install-box { background:var(--card2); border-radius:22px 22px 0 0;
-  padding:20px 22px calc(28px + env(safe-area-inset-bottom));
-  width:100%; max-width:480px; }
-.install-box h3 { font-size:17px; font-weight:700; margin-bottom:6px; }
-.install-box p { font-size:13px; color:var(--muted); line-height:1.6; margin-bottom:16px; }
-.install-steps { display:flex; flex-direction:column; gap:12px; margin-bottom:20px; }
-.install-step { display:flex; align-items:center; gap:12px; }
-.step-num { width:28px; height:28px; border-radius:50%; background:var(--accent);
-  color:#fff; font-size:13px; font-weight:700; display:flex;
-  align-items:center; justify-content:center; flex-shrink:0; }
-.step-text { font-size:13px; line-height:1.4; }
+/* INSTALL MODAL */
+.install-modal { position:fixed;inset:0;z-index:200;display:flex;align-items:flex-end;
+  background:rgba(0,0,0,0.6);opacity:0;pointer-events:none;transition:opacity .3s; }
+.install-modal.open { opacity:1;pointer-events:all; }
+.install-box { background:var(--card2);border-radius:22px 22px 0 0;padding:20px 22px calc(28px + env(safe-area-inset-bottom));width:100%; }
+.install-box h3 { font-size:17px;font-weight:700;margin-bottom:6px; }
+.install-box p { font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:16px; }
+.install-steps { display:flex;flex-direction:column;gap:12px;margin-bottom:20px; }
+.install-step { display:flex;align-items:center;gap:12px; }
+.step-num { width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
+.step-text { font-size:13px;line-height:1.4; }
 .step-text strong { color:var(--text); }
 .step-text span { color:var(--muted); }
-.install-actions { display:flex; gap:10px; }
-.btn-install-primary { flex:1; background:var(--accent); border:none; border-radius:12px;
-  padding:13px; color:#fff; font-size:14px; font-weight:600; cursor:pointer; }
-.btn-install-secondary { background:rgba(255,255,255,0.07); border:1px solid var(--border2);
-  border-radius:12px; padding:13px 18px; color:var(--muted); font-size:14px; cursor:pointer; }
+.install-actions { display:flex;gap:10px; }
+.btn-install-primary { flex:1;background:var(--accent);border:none;border-radius:12px;padding:13px;color:#fff;font-size:14px;font-weight:600;cursor:pointer; }
+.btn-install-secondary { background:rgba(255,255,255,0.07);border:1px solid var(--border2);border-radius:12px;padding:13px 18px;color:var(--muted);font-size:14px;cursor:pointer; }
+
+/* TOAST */
+.toast { position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(80px);
+  background:#222233;border:1px solid var(--border2);border-radius:10px;padding:9px 18px;
+  font-family:var(--mono);font-size:12px;color:var(--text);transition:transform .3s;
+  z-index:300;white-space:nowrap;pointer-events:none; }
+.toast.show { transform:translateX(-50%) translateY(0); }
+
+/* PIN input */
+.pin-display { display:flex;gap:10px;justify-content:center;margin:16px 0; }
+.pin-dot { width:16px;height:16px;border-radius:50%;border:2px solid var(--border2);transition:all .2s; }
+.pin-dot.filled { background:var(--accent);border-color:var(--accent); }
+.numpad { display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:0 20px; }
+.num-btn { background:rgba(255,255,255,0.07);border:none;border-radius:14px;padding:16px;
+  font-size:20px;font-weight:500;color:var(--text);cursor:pointer;transition:all .15s;font-family:var(--mono); }
+.num-btn:active { background:rgba(255,255,255,0.15);transform:scale(.95); }
+.num-btn.del { font-size:16px; }
+.num-btn.empty { background:none;cursor:default; }
 </style>
 </head>
 <body>
 
 <div class="header">
   <div class="header-left">
-    <span class="portfolio-title">My Portfolio</span>
+    <span class="portfolio-title" id="portfolioTitle" onclick="openPortfolioSheet()">My Portfolio</span>
     <span class="header-sub" id="headerSub">—</span>
   </div>
   <div class="header-btns">
@@ -228,19 +220,19 @@ body { font-family: var(--sans); background: var(--bg); color: var(--text);
         <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
       </svg>
     </button>
-    <button class="btn-hdr" id="editBtn" onclick="toggleEdit()" title="Modifica/Riordina">
+    <button class="btn-hdr" id="editBtn" onclick="toggleEdit()" title="Modifica">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
       </svg>
     </button>
-    <button class="btn-hdr" id="installBtn" onclick="handleInstall()" title="Installa app" style="display:none">
+    <button class="btn-hdr" id="installBtn" onclick="handleInstall()" title="Installa app">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
         <polyline points="7 10 12 15 17 10"/>
         <line x1="12" y1="15" x2="12" y2="3"/>
       </svg>
     </button>
-    <button class="btn-hdr" onclick="openSheet()" title="Aggiungi titolo">
+    <button class="btn-hdr" onclick="openAddSheet()" title="Aggiungi titolo">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
         <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
       </svg>
@@ -255,12 +247,13 @@ body { font-family: var(--sans); background: var(--bg); color: var(--text);
   <span class="footer-right" id="footerMeta"></span>
 </div>
 
-<div class="sheet-overlay" id="sheetOverlay" onclick="closeSheet()"></div>
+<!-- Overlay condiviso -->
+<div class="overlay" id="overlay" onclick="closeAllSheets()"></div>
 
-<div class="bottom-sheet" id="bottomSheet">
+<!-- ── ADD SHEET ── -->
+<div class="sheet" id="addSheet">
   <div class="sheet-handle"></div>
   <div class="sheet-title">Aggiungi titolo</div>
-
   <div class="worker-setup" id="workerSetup">
     <p>⚠ Prima configura il proxy su <a href="https://workers.cloudflare.com" target="_blank">Cloudflare Workers</a> con <code>worker.js</code>:</p>
     <div class="worker-row">
@@ -268,66 +261,88 @@ body { font-family: var(--sans); background: var(--bg); color: var(--text);
       <button class="worker-btn" onclick="saveWorkerUrl()">✓ Salva</button>
     </div>
   </div>
-
-  <!-- RICERCA LIVE -->
   <div class="search-box">
-    <span class="search-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-      </svg>
-    </span>
-    <input class="sheet-input" id="searchInput" type="text"
-      placeholder="Cerca per nome o simbolo…" autocomplete="off" autocorrect="off"
-      oninput="onSearchInput(this.value)"
+    <span class="search-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+    <input class="sheet-input" id="searchInput" type="text" placeholder="Cerca per nome o simbolo…"
+      autocomplete="off" autocorrect="off" oninput="onSearchInput(this.value)"
       onkeydown="if(event.key==='Escape') clearSearch()">
   </div>
-
-  <!-- Risultati ricerca (nascosti di default) -->
   <div id="searchResults" style="display:none;"></div>
-
-  <!-- Divisore -->
   <div class="sheet-divider" id="sheetDivider"></div>
-
-  <!-- Tabs mercato -->
   <div class="sheet-tabs">
-    <div class="stab active" onclick="setTab(this,'azioni-it')">🇮🇹 Azioni IT</div>
-    <div class="stab" onclick="setTab(this,'azioni-us')">🇺🇸 Azioni US</div>
-    <div class="stab" onclick="setTab(this,'etf')">📦 ETF/ETP</div>
+    <div class="stab active" onclick="setTab(this,'azioni-it')">🇮🇹 IT</div>
+    <div class="stab" onclick="setTab(this,'azioni-us')">🇺🇸 US</div>
+    <div class="stab" onclick="setTab(this,'etf')">📦 ETF</div>
     <div class="stab" onclick="setTab(this,'crypto')">₿ Crypto</div>
     <div class="stab" onclick="setTab(this,'materie')">🥇 Materie</div>
     <div class="stab" onclick="setTab(this,'forex')">💱 Forex</div>
   </div>
-
-  <!-- Chips suggerimenti -->
   <div class="sheet-chips" id="sheetChips"></div>
 </div>
 
+<!-- ── PORTFOLIO SHEET ── -->
+<div class="sheet" id="portfolioSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-title" id="pfSheetTitle">I miei portafogli</div>
+
+  <!-- Lista portafogli -->
+  <div id="pfListView">
+    <div class="pf-list" id="pfList"></div>
+    <div class="pf-sep"></div>
+    <div class="pf-section">
+      <div class="pf-section-title">Nuovo portafoglio</div>
+      <div class="pf-input-row">
+        <input class="pf-input" id="newPfName" placeholder="Es. Azionario IT" maxlength="30">
+        <button class="btn-pf" onclick="startCreatePortfolio()">Crea</button>
+      </div>
+      <div class="pf-section-title" style="margin-top:12px;">Carica portafoglio esistente</div>
+      <div class="pf-input-row">
+        <input class="pf-input" id="loadPfId" placeholder="ID portafoglio" maxlength="20" style="font-family:var(--mono)">
+        <button class="btn-pf secondary" onclick="startLoadPortfolio()">Carica</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PIN view (usata sia per creare che per caricare) -->
+  <div id="pfPinView" style="display:none;">
+    <div style="padding:0 18px;text-align:center;">
+      <p style="font-size:14px;color:var(--muted);line-height:1.5;" id="pinPrompt">Scegli un PIN a 4 cifre per proteggere il portafoglio</p>
+    </div>
+    <div class="pin-display">
+      <div class="pin-dot" id="pd0"></div>
+      <div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div>
+      <div class="pin-dot" id="pd3"></div>
+    </div>
+    <div class="numpad">
+      <button class="num-btn" onclick="pinDigit('1')">1</button>
+      <button class="num-btn" onclick="pinDigit('2')">2</button>
+      <button class="num-btn" onclick="pinDigit('3')">3</button>
+      <button class="num-btn" onclick="pinDigit('4')">4</button>
+      <button class="num-btn" onclick="pinDigit('5')">5</button>
+      <button class="num-btn" onclick="pinDigit('6')">6</button>
+      <button class="num-btn" onclick="pinDigit('7')">7</button>
+      <button class="num-btn" onclick="pinDigit('8')">8</button>
+      <button class="num-btn" onclick="pinDigit('9')">9</button>
+      <button class="num-btn empty"></button>
+      <button class="num-btn" onclick="pinDigit('0')">0</button>
+      <button class="num-btn del" onclick="pinBack()">⌫</button>
+    </div>
+    <div style="display:flex;gap:10px;padding:16px 18px 0;">
+      <button class="btn-pf secondary" style="flex:1" onclick="showPfList()">← Indietro</button>
+    </div>
+  </div>
+</div>
 
 <!-- Install modal -->
 <div class="install-modal" id="installModal" onclick="closeInstallModal()">
   <div class="install-box" onclick="event.stopPropagation()">
     <h3>📲 Installa Borsa Live</h3>
-    <p>Aggiungi l'app alla schermata Home per accedervi come un'app nativa.</p>
+    <p>Aggiungi l'app alla schermata Home per usarla come un'app nativa.</p>
     <div class="install-steps">
-      <div class="install-step">
-        <div class="step-num">1</div>
-        <div class="step-text">
-          <strong>Tocca i tre puntini</strong> <span>⋮ in alto a destra in Chrome</span>
-        </div>
-      </div>
-      <div class="install-step">
-        <div class="step-num">2</div>
-        <div class="step-text">
-          <strong>Seleziona "Aggiungi a schermata Home"</strong>
-          <span> oppure "Installa app"</span>
-        </div>
-      </div>
-      <div class="install-step">
-        <div class="step-num">3</div>
-        <div class="step-text">
-          <strong>Conferma</strong> <span>e l'icona apparirà sulla Home 🎉</span>
-        </div>
-      </div>
+      <div class="install-step"><div class="step-num">1</div><div class="step-text"><strong>Tocca i tre puntini</strong> <span>⋮ in alto a destra in Chrome</span></div></div>
+      <div class="install-step"><div class="step-num">2</div><div class="step-text"><strong>Seleziona "Aggiungi a schermata Home"</strong> <span>o "Installa app"</span></div></div>
+      <div class="install-step"><div class="step-num">3</div><div class="step-text"><strong>Conferma</strong> <span>e l'icona appare sulla Home 🎉</span></div></div>
     </div>
     <div class="install-actions">
       <button class="btn-install-primary" id="installNowBtn" onclick="triggerInstall()">Installa ora</button>
@@ -335,376 +350,445 @@ body { font-family: var(--sans); background: var(--bg); color: var(--text);
     </div>
   </div>
 </div>
+
 <div class="toast" id="toast"></div>
 
 <script>
 /* ================================================================
-   BORSA LIVE v7 — ricerca live + bottom sheet + drag & drop
+   BORSA LIVE v8 — portafogli cloud su Cloudflare KV
 ================================================================ */
 
 var PRESETS = {
-  'azioni-it': [
-    {sym:'ENI.MI',label:'ENI'},{sym:'UCG.MI',label:'UniCredit'},
-    {sym:'ISP.MI',label:'Intesa SP'},{sym:'RACE.MI',label:'Ferrari'},
-    {sym:'STLAM.MI',label:'Stellantis'},{sym:'ENEL.MI',label:'Enel'},
-    {sym:'G.MI',label:'Generali'},{sym:'MB.MI',label:'Mediobanca'},
-    {sym:'LDO.MI',label:'Leonardo'},{sym:'BAMI.MI',label:'B.MontePaschi'},
-    {sym:'TRN.MI',label:'Terna'},{sym:'SRG.MI',label:'Snam'},
-    {sym:'AZM.MI',label:'Azimut'},{sym:'UNI.MI',label:'Unipol'},
-  ],
-  'azioni-us': [
-    {sym:'AAPL',label:'Apple'},{sym:'MSFT',label:'Microsoft'},
-    {sym:'NVDA',label:'Nvidia'},{sym:'TSLA',label:'Tesla'},
-    {sym:'AMZN',label:'Amazon'},{sym:'GOOGL',label:'Alphabet'},
-    {sym:'META',label:'Meta'},{sym:'JPM',label:'JPMorgan'},
-    {sym:'BRK-B',label:'Berkshire'},{sym:'V',label:'Visa'},
-  ],
-  'etf': [
-    {sym:'SWDA.MI',label:'iShares World'},{sym:'VWCE.MI',label:'Vanguard All-W'},
-    {sym:'CSPX.MI',label:'iShares S&P500'},{sym:'XDWD.MI',label:'Xtrackers World'},
-    {sym:'EIMI.MI',label:'iShares EM'},{sym:'PHAU.MI',label:'ETC Oro fisico'},
-    {sym:'BCOIN.MI',label:'ETP Bitcoin'},{sym:'BTPI.MI',label:'ETF BTP Italia'},
-  ],
-  'crypto': [
-    {sym:'BTC-USD',label:'Bitcoin'},{sym:'ETH-USD',label:'Ethereum'},
-    {sym:'SOL-USD',label:'Solana'},{sym:'BNB-USD',label:'BNB'},
-    {sym:'XRP-USD',label:'XRP'},{sym:'ADA-USD',label:'Cardano'},
-  ],
-  'materie': [
-    {sym:'GC=F',label:'Oro'},{sym:'SI=F',label:'Argento'},
-    {sym:'CL=F',label:'Petrolio WTI'},{sym:'BZ=F',label:'Brent'},
-    {sym:'NG=F',label:'Gas'},{sym:'HG=F',label:'Rame'},
-  ],
-  'forex': [
-    {sym:'EURUSD=X',label:'EUR/USD'},{sym:'GBPUSD=X',label:'GBP/USD'},
-    {sym:'USDJPY=X',label:'USD/JPY'},{sym:'EURGBP=X',label:'EUR/GBP'},
-    {sym:'USDCHF=X',label:'USD/CHF'},{sym:'EURJPY=X',label:'EUR/JPY'},
-  ],
+  'azioni-it': [{sym:'ENI.MI',label:'ENI'},{sym:'UCG.MI',label:'UniCredit'},{sym:'ISP.MI',label:'Intesa SP'},{sym:'RACE.MI',label:'Ferrari'},{sym:'STLAM.MI',label:'Stellantis'},{sym:'ENEL.MI',label:'Enel'},{sym:'G.MI',label:'Generali'},{sym:'MB.MI',label:'Mediobanca'},{sym:'LDO.MI',label:'Leonardo'},{sym:'BAMI.MI',label:'B.MontePaschi'},{sym:'TRN.MI',label:'Terna'},{sym:'SRG.MI',label:'Snam'},{sym:'AZM.MI',label:'Azimut'},{sym:'UNI.MI',label:'Unipol'}],
+  'azioni-us': [{sym:'AAPL',label:'Apple'},{sym:'MSFT',label:'Microsoft'},{sym:'NVDA',label:'Nvidia'},{sym:'TSLA',label:'Tesla'},{sym:'AMZN',label:'Amazon'},{sym:'GOOGL',label:'Alphabet'},{sym:'META',label:'Meta'},{sym:'JPM',label:'JPMorgan'},{sym:'BRK-B',label:'Berkshire'},{sym:'V',label:'Visa'}],
+  'etf': [{sym:'SWDA.MI',label:'iShares World'},{sym:'VWCE.MI',label:'Vanguard All-W'},{sym:'CSPX.MI',label:'iShares S&P500'},{sym:'XDWD.MI',label:'Xtrackers World'},{sym:'EIMI.MI',label:'iShares EM'},{sym:'PHAU.MI',label:'ETC Oro fisico'},{sym:'BCOIN.MI',label:'ETP Bitcoin'},{sym:'BTPI.MI',label:'ETF BTP Italia'}],
+  'crypto': [{sym:'BTC-USD',label:'Bitcoin'},{sym:'ETH-USD',label:'Ethereum'},{sym:'SOL-USD',label:'Solana'},{sym:'BNB-USD',label:'BNB'},{sym:'XRP-USD',label:'XRP'},{sym:'ADA-USD',label:'Cardano'}],
+  'materie': [{sym:'GC=F',label:'Oro'},{sym:'SI=F',label:'Argento'},{sym:'CL=F',label:'Petrolio WTI'},{sym:'BZ=F',label:'Brent'},{sym:'NG=F',label:'Gas'},{sym:'HG=F',label:'Rame'}],
+  'forex': [{sym:'EURUSD=X',label:'EUR/USD'},{sym:'GBPUSD=X',label:'GBP/USD'},{sym:'USDJPY=X',label:'USD/JPY'},{sym:'EURGBP=X',label:'EUR/GBP'},{sym:'USDCHF=X',label:'USD/CHF'},{sym:'EURJPY=X',label:'EUR/JPY'}],
 };
 
-var COLORS = ['#4f7aff','#7c6af7','#e8504a','#22c97a','#f59e0b','#06b6d4','#ec4899','#8b5cf6','#10b981','#f97316'];
-function avatarColor(sym){ var h=0; for(var i=0;i<sym.length;i++) h=(h*31+sym.charCodeAt(i))&0xffff; return COLORS[h%COLORS.length]; }
-function avatarLetter(name,sym){ var s=(name&&name.length>0)?name:sym; return (s.replace(/[^a-zA-Z]/g,'')[0]||sym[0]).toUpperCase(); }
+var COLORS=['#4f7aff','#7c6af7','#e8504a','#22c97a','#f59e0b','#06b6d4','#ec4899','#8b5cf6','#10b981','#f97316'];
+function avatarColor(s){var h=0;for(var i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))&0xffff;return COLORS[h%COLORS.length];}
+function avatarLetter(n,s){var x=(n&&n.length>0)?n:s;return(x.replace(/[^a-zA-Z]/g,'')[0]||s[0]).toUpperCase();}
 
 /* ---- WORKER ---- */
 var workerUrl='';
-try{ workerUrl=localStorage.getItem('borsaWorkerUrl')||''; }catch(e){}
-
+try{workerUrl=localStorage.getItem('borsaWorkerUrl')||'';}catch(e){}
 function saveWorkerUrl(){
   var val=document.getElementById('workerUrlInput').value.trim().replace(/\/$/,'');
-  if(!val||!val.startsWith('http')){ showToast('⚠ URL non valido'); return; }
-  workerUrl=val;
-  try{ localStorage.setItem('borsaWorkerUrl',workerUrl); }catch(e){}
+  if(!val||!val.startsWith('http')){showToast('⚠ URL non valido');return;}
+  workerUrl=val;try{localStorage.setItem('borsaWorkerUrl',workerUrl);}catch(e){}
   document.getElementById('workerSetup').style.display='none';
-  showToast('✓ Worker salvato!');
-  closeSheet(); refreshAll();
+  showToast('✓ Worker salvato!');closeAllSheets();refreshAll();
 }
-function initWorkerUI(){ if(workerUrl) document.getElementById('workerSetup').style.display='none'; }
+function initWorkerUI(){if(workerUrl)document.getElementById('workerSetup').style.display='none';}
 
-/* ---- FETCH quotazione ---- */
+/* ---- PORTFOLIO STATE ---- */
+var currentPfId='';
+var currentPfName='My Portfolio';
+var currentPin='';
+try{currentPfId=localStorage.getItem('borsaPfId')||'';}catch(e){}
+try{currentPfName=localStorage.getItem('borsaPfName')||'My Portfolio';}catch(e){}
+try{currentPin=localStorage.getItem('borsaPin')||'';}catch(e){}
+
+function generateId(){return Math.random().toString(36).substr(2,8).toUpperCase();}
+
+/* ---- FETCH quote ---- */
 async function fetchStock(sym){
-  if(!workerUrl) throw new Error('no_worker');
+  if(!workerUrl)throw new Error('no_worker');
   var res=await fetch(workerUrl+'?s='+encodeURIComponent(sym),{signal:AbortSignal.timeout(10000)});
-  if(!res.ok) throw new Error('HTTP '+res.status);
+  if(!res.ok)throw new Error('HTTP '+res.status);
   var json=await res.json();
-  if(!json.chart) throw new Error('no_chart');
-  if(json.chart.error) throw new Error('yf_error');
+  if(!json.chart)throw new Error('no_chart');
+  if(json.chart.error)throw new Error('yf_error');
   var r=json.chart.result&&json.chart.result[0];
-  if(!r||!r.meta||r.meta.regularMarketPrice==null) throw new Error('no_price');
-  var meta=r.meta;
-  return { symbol:meta.symbol||sym, name:meta.longName||meta.shortName||sym,
-    price:meta.regularMarketPrice, prevClose:meta.chartPreviousClose||meta.previousClose,
-    currency:meta.currency||'', exchange:meta.exchangeName||'', marketState:meta.marketState||'' };
+  if(!r||!r.meta||r.meta.regularMarketPrice==null)throw new Error('no_price');
+  var m=r.meta;
+  return{symbol:m.symbol||sym,name:m.longName||m.shortName||sym,price:m.regularMarketPrice,
+    prevClose:m.chartPreviousClose||m.previousClose,currency:m.currency||'',exchange:m.exchangeName||'',marketState:m.marketState||''};
 }
 
-/* ---- FETCH ricerca ---- */
+/* ---- FETCH search ---- */
 var searchTimer=null;
-var lastQuery='';
-
 function onSearchInput(val){
   val=val.trim();
-  var resultsEl=document.getElementById('searchResults');
-  var divider=document.getElementById('sheetDivider');
-
-  if(!val){
-    clearSearch(); return;
-  }
-
-  // Mostra loading subito
-  resultsEl.style.display='block';
-  divider.style.display='none';
-  resultsEl.innerHTML='<div class="search-loading"><span></span><span></span><span></span></div>';
-
+  var res=document.getElementById('searchResults');
+  var div=document.getElementById('sheetDivider');
+  if(!val){clearSearch();return;}
+  res.style.display='block';div.style.display='none';
+  res.innerHTML='<div class="search-loading"><span></span><span></span><span></span></div>';
   clearTimeout(searchTimer);
-  searchTimer=setTimeout(function(){ doSearch(val); }, 380);
+  searchTimer=setTimeout(function(){doSearch(val);},380);
 }
-
 async function doSearch(q){
-  if(!workerUrl){
-    document.getElementById('searchResults').innerHTML='<div class="search-hint">⚠ Configura prima il Worker</div>';
-    return;
-  }
-  lastQuery=q;
+  if(!workerUrl){document.getElementById('searchResults').innerHTML='<div class="search-hint">⚠ Configura prima il Worker</div>';return;}
   try{
     var res=await fetch(workerUrl+'?q='+encodeURIComponent(q),{signal:AbortSignal.timeout(8000)});
     var json=await res.json();
-    // Controlla che la query sia ancora quella attuale (evita race condition)
-    if(document.getElementById('searchInput').value.trim()!==q) return;
-    renderSearchResults(json, q);
-  }catch(e){
-    document.getElementById('searchResults').innerHTML='<div class="search-hint">Errore di rete, riprova</div>';
-  }
+    if(document.getElementById('searchInput').value.trim()!==q)return;
+    renderSearchResults(json,q);
+  }catch(e){document.getElementById('searchResults').innerHTML='<div class="search-hint">Errore, riprova</div>';}
 }
-
-function renderSearchResults(json, q){
-  var resultsEl=document.getElementById('searchResults');
+function renderSearchResults(json,q){
+  var el=document.getElementById('searchResults');
   var quotes=(json.quotes||[]).filter(function(r){
-    return r.symbol && (r.quoteType==='EQUITY'||r.quoteType==='ETF'||
-      r.quoteType==='CRYPTOCURRENCY'||r.quoteType==='FUTURE'||r.quoteType==='CURRENCY');
+    return r.symbol&&(r.quoteType==='EQUITY'||r.quoteType==='ETF'||r.quoteType==='CRYPTOCURRENCY'||r.quoteType==='FUTURE'||r.quoteType==='CURRENCY');
   }).slice(0,8);
-
-  if(!quotes.length){
-    resultsEl.innerHTML='<div class="search-hint">Nessun risultato per "'+q+'"</div>';
-    return;
-  }
-
-  resultsEl.innerHTML=quotes.map(function(r){
-    var sym=r.symbol||'';
-    var name=r.longname||r.shortname||sym;
-    var exchange=r.exchange||r.quoteType||'';
+  if(!quotes.length){el.innerHTML='<div class="search-hint">Nessun risultato per "'+q+'"</div>';return;}
+  el.innerHTML=quotes.map(function(r){
+    var sym=r.symbol||'';var name=r.longname||r.shortname||sym;
     var added=tickers.indexOf(sym)!==-1;
     var safe=sym.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-    var col=avatarColor(sym);
-    var letter=avatarLetter(name,sym);
-    var shortName=name.length>26?name.substring(0,24)+'…':name;
-    return '<div class="result-row" onclick="addFromSearch(\''+safe+'\',\''+shortName.replace(/'/g,"\\'")+'\')">' +
-      '<div class="result-avatar" style="background:'+col+'">'+letter+'</div>'+
-      '<div class="result-info">'+
-        '<div class="result-name">'+shortName+'</div>'+
-        '<div class="result-sym">'+sym+'<span style="margin-left:6px;opacity:.5;font-size:10px">'+exchange+'</span></div>'+
-      '</div>'+
-      '<button class="result-add'+(added?' added':'')+'" onclick="event.stopPropagation();addFromSearch(\''+safe+'\',\''+shortName.replace(/'/g,"\\'")+'\')">'+(added?'✓':'+'+'Aggiungi')+'</button>'+
+    var sn=name.length>26?name.substring(0,24)+'…':name;
+    return '<div class="result-row" onclick="addFromSearch(\''+safe+'\')">' +
+      '<div class="result-avatar" style="background:'+avatarColor(sym)+'">'+avatarLetter(name,sym)+'</div>'+
+      '<div class="result-info"><div class="result-name">'+sn+'</div>'+
+      '<div class="result-sym">'+sym+'<span style="margin-left:6px;opacity:.5;font-size:10px">'+( r.exchange||'')+'</span></div></div>'+
+      '<button class="result-add'+(added?' added':'')+'" onclick="event.stopPropagation();addFromSearch(\''+safe+'\')">'+(added?'✓':'+')+'</button>'+
     '</div>';
   }).join('');
 }
-
-function addFromSearch(sym, name){
-  if(tickers.indexOf(sym)!==-1){ showToast('⚠ '+sym+' già in lista'); return; }
-  tickers.push(sym); save();
-  clearSearch();
-  closeSheet();
-  renderList(); fetchAndRender(sym);
-  showToast('✓ '+sym+' aggiunto');
+function addFromSearch(sym){
+  if(tickers.indexOf(sym)!==-1){showToast('⚠ '+sym+' già in lista');return;}
+  tickers.push(sym);saveLocal();clearSearch();closeAllSheets();
+  renderList();fetchAndRender(sym);
+  autoSaveCloud();
 }
-
 function clearSearch(){
   clearTimeout(searchTimer);
   document.getElementById('searchInput').value='';
   document.getElementById('searchResults').style.display='none';
   document.getElementById('sheetDivider').style.display='block';
-  lastQuery='';
 }
 
-/* ---- STATE ---- */
+/* ---- TICKERS STATE ---- */
 var tickers=[];
-try{
-  var _s=localStorage.getItem('borsaTickers');
-  if(_s){ var _p=JSON.parse(_s);
-    if(Array.isArray(_p)&&_p.length&&_p.every(function(x){return typeof x==='string'&&x.length>0;}))
-      tickers=_p; }
-}catch(e){}
-if(!tickers.length) tickers=['ENI.MI','UCG.MI','AAPL','BTC-USD'];
+try{var _s=localStorage.getItem('borsaTickers');
+  if(_s){var _p=JSON.parse(_s);
+    if(Array.isArray(_p)&&_p.length&&_p.every(function(x){return typeof x==='string'&&x.length>0;}))tickers=_p;}}catch(e){}
+if(!tickers.length)tickers=['ENI.MI','UCG.MI','AAPL','BTC-USD'];
 
-var stockData={}, editMode=false, currentTab='azioni-it';
-var countdownSec=60, countdownInterval=null;
-function save(){ try{ localStorage.setItem('borsaTickers',JSON.stringify(tickers)); }catch(e){} }
+var stockData={},editMode=false,currentTab='azioni-it';
+var countdownSec=60,countdownInterval=null;
+
+function saveLocal(){try{localStorage.setItem('borsaTickers',JSON.stringify(tickers));}catch(e){}}
+
+/* ---- CLOUD SAVE/LOAD ---- */
+async function saveToCloud(){
+  if(!workerUrl||!currentPfId||!currentPin)return false;
+  try{
+    var res=await fetch(workerUrl+'?action=save',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({id:currentPfId,name:currentPfName,pin:currentPin,tickers:tickers})
+    });
+    var json=await res.json();
+    return json.ok===true;
+  }catch(e){return false;}
+}
+
+async function loadFromCloud(id,pin){
+  if(!workerUrl)return null;
+  try{
+    var res=await fetch(workerUrl+'?action=load&id='+encodeURIComponent(id)+'&pin='+encodeURIComponent(pin));
+    var json=await res.json();
+    if(json.ok)return json.portfolio;
+    return null;
+  }catch(e){return null;}
+}
+
+async function listFromCloud(pin){
+  if(!workerUrl)return[];
+  try{
+    var res=await fetch(workerUrl+'?action=list&pin='+encodeURIComponent(pin));
+    var json=await res.json();
+    return json.portfolios||[];
+  }catch(e){return[];}
+}
+
+async function autoSaveCloud(){
+  if(currentPfId&&currentPin){
+    var ok=await saveToCloud();
+    if(ok)showToast('☁ Salvato');
+  }
+}
 
 /* ---- FORMAT ---- */
-function fmt(n,dec){ dec=dec==null?2:dec; if(n==null||isNaN(n))return'—';
-  return n.toLocaleString('it-IT',{minimumFractionDigits:dec,maximumFractionDigits:dec}); }
-function fmtP(n){ if(n==null||isNaN(n))return'—';
-  if(n>=10000)return n.toLocaleString('it-IT',{minimumFractionDigits:0,maximumFractionDigits:0});
-  if(n>=100)return n.toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2});
-  return n.toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:4}); }
+function fmt(n,dec){dec=dec==null?2:dec;if(n==null||isNaN(n))return'—';return n.toLocaleString('it-IT',{minimumFractionDigits:dec,maximumFractionDigits:dec});}
+function fmtP(n){if(n==null||isNaN(n))return'—';if(n>=10000)return n.toLocaleString('it-IT',{minimumFractionDigits:0,maximumFractionDigits:0});if(n>=100)return n.toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2});return n.toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:4});}
 
-/* ---- ROW HTML ---- */
-function escId(s){ return 'r-'+s.replace(/[^a-zA-Z0-9]/g,'_'); }
-
-function skelRow(sym){
-  return '<div class="skel-row" id="'+escId(sym)+'">'+
-    '<div class="skel-av"></div>'+
-    '<div class="skel-info"><div class="skel-ln" style="width:110px;height:13px;margin-bottom:5px"></div>'+
-    '<div class="skel-ln" style="width:65px;height:10px"></div></div>'+
-    '<div class="skel-pr"><div class="skel-ln" style="width:72px;height:13px;margin-bottom:5px;margin-left:auto"></div>'+
-    '<div class="skel-ln" style="width:95px;height:10px;margin-left:auto"></div></div></div>';
-}
+/* ---- ROWS ---- */
+function escId(s){return 'r-'+s.replace(/[^a-zA-Z0-9]/g,'_');}
+function skelRow(sym){return '<div class="skel-row" id="'+escId(sym)+'"><div class="skel-av"></div><div class="skel-info"><div class="skel-ln" style="width:110px;height:13px;margin-bottom:5px"></div><div class="skel-ln" style="width:65px;height:10px"></div></div><div class="skel-pr"><div class="skel-ln" style="width:72px;height:13px;margin-bottom:5px;margin-left:auto"></div><div class="skel-ln" style="width:95px;height:10px;margin-left:auto"></div></div></div>';}
 
 function stockRow(sym,d){
-  var id=escId(sym);
-  var safe=sym.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+  var id=escId(sym),safe=sym.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
   var short=sym.replace('.MI','').replace('-USD','').replace('=X','').replace('=F','');
-  if(!d||d.error){
-    return '<div class="stock-row" id="'+id+'" data-sym="'+sym+'">'+
-      (editMode?'<div class="drag-handle">⠿</div>':'')+
-      '<div class="avatar" style="background:'+avatarColor(sym)+'">'+short[0].toUpperCase()+'</div>'+
-      '<div class="row-info"><div class="row-name">'+short+'</div>'+
-      '<div class="row-sym" style="color:var(--red)">⚠ non trovato</div></div>'+
-      '<div class="row-price"></div>'+
-      (editMode?'<button class="btn-del" onclick="removeTicker(\''+safe+'\')">✕</button>':'')+
-    '</div>';
-  }
-  var change=(d.price||0)-(d.prevClose||0);
-  var pct=d.prevClose?(change/d.prevClose)*100:0;
-  var pos=change>0,neg=change<0;
-  var sign=pos?'+':'';
+  if(!d||d.error)return '<div class="stock-row" id="'+id+'" data-sym="'+sym+'">'+(editMode?'<div class="drag-handle">⠿</div>':'')+
+    '<div class="avatar" style="background:'+avatarColor(sym)+'">'+short[0].toUpperCase()+'</div>'+
+    '<div class="row-info"><div class="row-name">'+short+'</div><div class="row-sym" style="color:var(--red)">⚠ non trovato</div></div>'+
+    '<div class="row-price"></div>'+(editMode?'<button class="btn-del" onclick="removeTicker(\''+safe+'\')">✕</button>':'')+
+  '</div>';
+  var change=(d.price||0)-(d.prevClose||0),pct=d.prevClose?(change/d.prevClose)*100:0;
+  var pos=change>0,neg=change<0,sign=pos?'+':'';
   var cls=pos?'pos':neg?'neg':'flat';
-  var shortName=d.name.length>24?d.name.substring(0,22)+'…':d.name;
-  return '<div class="stock-row" id="'+id+'" data-sym="'+sym+'">'+
-    (editMode?'<div class="drag-handle">⠿</div>':'')+
+  var sn=d.name.length>24?d.name.substring(0,22)+'…':d.name;
+  return '<div class="stock-row" id="'+id+'" data-sym="'+sym+'">'+(editMode?'<div class="drag-handle">⠿</div>':'')+
     '<div class="avatar" style="background:'+avatarColor(sym)+'">'+avatarLetter(d.name,sym)+'</div>'+
-    '<div class="row-info"><div class="row-name">'+shortName+'</div>'+
-    '<div class="row-sym">'+sym+'</div></div>'+
+    '<div class="row-info"><div class="row-name">'+sn+'</div><div class="row-sym">'+sym+'</div></div>'+
     '<div class="row-price"><div class="row-value">'+fmtP(d.price)+'</div>'+
     '<div class="row-change '+cls+'">'+sign+fmt(change)+' ('+sign+fmt(pct)+'%)</div></div>'+
     (editMode?'<button class="btn-del" onclick="removeTicker(\''+safe+'\')">✕</button>':'')+
   '</div>';
 }
 
-/* ---- RENDER ---- */
 function renderList(){
   var list=document.getElementById('stockList');
-  if(!tickers.length){
-    list.innerHTML='<div class="empty"><div class="big">📈</div><p>Nessun titolo.<br>Premi <b>+</b> per aggiungere.</p></div>';
-    return;
-  }
-  list.innerHTML=tickers.map(function(t){ return stockData[t]===undefined?skelRow(t):stockRow(t,stockData[t]); }).join('');
-  if(editMode) list.classList.add('edit-mode'); else list.classList.remove('edit-mode');
-  updateMeta(); renderChips(); initDragDrop();
+  document.getElementById('portfolioTitle').textContent=currentPfName;
+  if(!tickers.length){list.innerHTML='<div class="empty"><div class="big">📈</div><p>Nessun titolo.<br>Premi <b>+</b> per aggiungere.</p></div>';return;}
+  list.innerHTML=tickers.map(function(t){return stockData[t]===undefined?skelRow(t):stockRow(t,stockData[t]);}).join('');
+  if(editMode)list.classList.add('edit-mode');else list.classList.remove('edit-mode');
+  updateMeta();renderChips();initDragDrop();
 }
 
 function updateMeta(){
-  var ok=tickers.filter(function(t){ return stockData[t]&&!stockData[t].error; }).length;
-  document.getElementById('footerMeta').textContent=ok+'/'+tickers.length;
+  var ok=tickers.filter(function(t){return stockData[t]&&!stockData[t].error;}).length;
+  document.getElementById('footerMeta').textContent=(currentPfId?'☁ ':'')+ok+'/'+tickers.length;
   document.getElementById('headerSub').textContent=new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
 }
 
 async function fetchAndRender(sym){
-  var list=document.getElementById('stockList');
-  var id=escId(sym); var idx=tickers.indexOf(sym);
-  var tmp=document.createElement('div'); tmp.innerHTML=skelRow(sym);
+  var list=document.getElementById('stockList'),id=escId(sym),idx=tickers.indexOf(sym);
+  var tmp=document.createElement('div');tmp.innerHTML=skelRow(sym);
   var skel=tmp.firstElementChild;
   var ex=document.getElementById(id);
-  if(ex) ex.replaceWith(skel);
-  else{ var ref=list.children[idx]||null; if(ref) list.insertBefore(skel,ref); else list.appendChild(skel); }
-  try{ stockData[sym]=await fetchStock(sym); }catch(e){ stockData[sym]={error:true}; }
-  var nt=document.createElement('div'); nt.innerHTML=stockRow(sym,stockData[sym]);
+  if(ex)ex.replaceWith(skel);
+  else{var ref=list.children[idx]||null;if(ref)list.insertBefore(skel,ref);else list.appendChild(skel);}
+  try{stockData[sym]=await fetchStock(sym);}catch(e){stockData[sym]={error:true};}
+  var nt=document.createElement('div');nt.innerHTML=stockRow(sym,stockData[sym]);
   var row=nt.firstElementChild;
-  var ph=document.getElementById(id);
-  if(ph) ph.replaceWith(row); else list.appendChild(row);
-  if(editMode) list.classList.add('edit-mode');
-  updateMeta(); renderChips(); initDragDrop();
+  var ph=document.getElementById(id);if(ph)ph.replaceWith(row);else list.appendChild(row);
+  if(editMode)list.classList.add('edit-mode');
+  updateMeta();renderChips();initDragDrop();
 }
 
 async function refreshAll(){
-  if(!workerUrl){ renderList(); return; }
+  if(!workerUrl){renderList();return;}
   renderList();
-  await Promise.all(tickers.map(function(t){ return fetchAndRender(t); }));
-  updateMeta(); resetCountdown();
+  await Promise.all(tickers.map(function(t){return fetchAndRender(t);}));
+  updateMeta();resetCountdown();
 }
 
 function resetCountdown(){
-  clearInterval(countdownInterval); countdownSec=60;
+  clearInterval(countdownInterval);countdownSec=60;
   countdownInterval=setInterval(function(){
     countdownSec--;
     var el=document.getElementById('countdown');
-    if(el) el.textContent=countdownSec>0?'Agg. tra '+countdownSec+'s':'';
-    if(countdownSec<=0) refreshAll();
+    if(el)el.textContent=countdownSec>0?'Agg. tra '+countdownSec+'s':'';
+    if(countdownSec<=0)refreshAll();
   },1000);
 }
 
-/* ---- EDIT / DRAG ---- */
 function toggleEdit(){
   editMode=!editMode;
   document.getElementById('editBtn').classList.toggle('editing',editMode);
   renderList();
 }
 
+/* ---- DRAG & DROP ---- */
 var dragSrc=null;
 function initDragDrop(){
-  if(!editMode) return;
+  if(!editMode)return;
   document.querySelectorAll('.stock-row').forEach(function(row){
-    var handle=row.querySelector('.drag-handle'); if(!handle) return;
+    var handle=row.querySelector('.drag-handle');if(!handle)return;
     handle.addEventListener('touchstart',onTouchStart,{passive:false});
-    handle.addEventListener('mousedown',function(){ row.setAttribute('draggable','true'); });
-    row.addEventListener('dragstart',function(e){ dragSrc=row; row.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; });
-    row.addEventListener('dragend',function(){ row.classList.remove('dragging'); row.setAttribute('draggable','false'); document.querySelectorAll('.stock-row').forEach(function(r){ r.classList.remove('drag-over'); }); });
-    row.addEventListener('dragover',function(e){ e.preventDefault(); if(row!==dragSrc) row.classList.add('drag-over'); });
-    row.addEventListener('dragleave',function(){ row.classList.remove('drag-over'); });
+    handle.addEventListener('mousedown',function(){row.setAttribute('draggable','true');});
+    row.addEventListener('dragstart',function(e){dragSrc=row;row.classList.add('dragging');e.dataTransfer.effectAllowed='move';});
+    row.addEventListener('dragend',function(){row.classList.remove('dragging');row.setAttribute('draggable','false');document.querySelectorAll('.stock-row').forEach(function(r){r.classList.remove('drag-over');});});
+    row.addEventListener('dragover',function(e){e.preventDefault();if(row!==dragSrc)row.classList.add('drag-over');});
+    row.addEventListener('dragleave',function(){row.classList.remove('drag-over');});
     row.addEventListener('drop',function(e){
-      e.preventDefault(); row.classList.remove('drag-over');
-      if(!dragSrc||dragSrc===row) return;
+      e.preventDefault();row.classList.remove('drag-over');
+      if(!dragSrc||dragSrc===row)return;
       var si=tickers.indexOf(dragSrc.dataset.sym),di=tickers.indexOf(row.dataset.sym);
-      if(si===-1||di===-1) return;
-      tickers.splice(si,1); tickers.splice(di,0,dragSrc.dataset.sym);
-      save(); renderList();
+      if(si===-1||di===-1)return;
+      tickers.splice(si,1);tickers.splice(di,0,dragSrc.dataset.sym);
+      saveLocal();renderList();autoSaveCloud();
     });
   });
 }
-
 var touchDragSrc=null,touchClone=null,touchOffY=0;
 function onTouchStart(e){
-  e.preventDefault();
-  var row=e.currentTarget.closest('.stock-row'); touchDragSrc=row;
-  var rect=row.getBoundingClientRect(); touchOffY=e.touches[0].clientY-rect.top;
+  e.preventDefault();var row=e.currentTarget.closest('.stock-row');touchDragSrc=row;
+  var rect=row.getBoundingClientRect();touchOffY=e.touches[0].clientY-rect.top;
   touchClone=row.cloneNode(true);
   touchClone.style.cssText='position:fixed;left:'+rect.left+'px;top:'+rect.top+'px;width:'+rect.width+'px;opacity:.85;z-index:1000;pointer-events:none;background:var(--card2);border-radius:14px;';
-  document.body.appendChild(touchClone); row.style.opacity='.3';
+  document.body.appendChild(touchClone);row.style.opacity='.3';
   document.addEventListener('touchmove',onTouchMove,{passive:false});
   document.addEventListener('touchend',onTouchEnd);
 }
 function onTouchMove(e){
-  e.preventDefault(); if(!touchClone) return;
+  e.preventDefault();if(!touchClone)return;
   touchClone.style.top=(e.touches[0].clientY-touchOffY)+'px';
-  touchClone.style.display='none';
-  var el=document.elementFromPoint(e.touches[0].clientX,e.touches[0].clientY);
-  touchClone.style.display='';
+  touchClone.style.display='none';var el=document.elementFromPoint(e.touches[0].clientX,e.touches[0].clientY);touchClone.style.display='';
   var tr=el?el.closest('.stock-row'):null;
-  document.querySelectorAll('.stock-row').forEach(function(r){ r.classList.remove('drag-over'); });
-  if(tr&&tr!==touchDragSrc) tr.classList.add('drag-over');
+  document.querySelectorAll('.stock-row').forEach(function(r){r.classList.remove('drag-over');});
+  if(tr&&tr!==touchDragSrc)tr.classList.add('drag-over');
 }
 function onTouchEnd(e){
-  document.removeEventListener('touchmove',onTouchMove);
-  document.removeEventListener('touchend',onTouchEnd);
-  if(touchClone){ touchClone.remove(); touchClone=null; }
-  if(touchDragSrc) touchDragSrc.style.opacity='';
-  var touch=e.changedTouches[0];
-  var el=document.elementFromPoint(touch.clientX,touch.clientY);
+  document.removeEventListener('touchmove',onTouchMove);document.removeEventListener('touchend',onTouchEnd);
+  if(touchClone){touchClone.remove();touchClone=null;}if(touchDragSrc)touchDragSrc.style.opacity='';
+  var touch=e.changedTouches[0],el=document.elementFromPoint(touch.clientX,touch.clientY);
   var tr=el?el.closest('.stock-row'):null;
-  document.querySelectorAll('.stock-row').forEach(function(r){ r.classList.remove('drag-over'); });
+  document.querySelectorAll('.stock-row').forEach(function(r){r.classList.remove('drag-over');});
   if(tr&&tr!==touchDragSrc&&touchDragSrc){
     var si=tickers.indexOf(touchDragSrc.dataset.sym),di=tickers.indexOf(tr.dataset.sym);
-    if(si!==-1&&di!==-1){ tickers.splice(si,1); tickers.splice(di,0,touchDragSrc.dataset.sym); save(); renderList(); }
+    if(si!==-1&&di!==-1){tickers.splice(si,1);tickers.splice(di,0,touchDragSrc.dataset.sym);saveLocal();renderList();autoSaveCloud();}
   }
   touchDragSrc=null;
 }
 
-/* ---- SHEET ---- */
-function openSheet(){
-  document.getElementById('sheetOverlay').classList.add('open');
-  document.getElementById('bottomSheet').classList.add('open');
-  setTimeout(function(){ document.getElementById('searchInput').focus(); },400);
+/* ---- SHEETS ---- */
+function openAddSheet(){
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('addSheet').classList.add('open');
+  setTimeout(function(){document.getElementById('searchInput').focus();},400);
 }
-function closeSheet(){
-  document.getElementById('sheetOverlay').classList.remove('open');
-  document.getElementById('bottomSheet').classList.remove('open');
-  clearSearch();
+function openPortfolioSheet(){
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('portfolioSheet').classList.add('open');
+  renderPfList();
+}
+function closeAllSheets(){
+  document.getElementById('overlay').classList.remove('open');
+  document.getElementById('addSheet').classList.remove('open');
+  document.getElementById('portfolioSheet').classList.remove('open');
+  clearSearch();showPfList();
+}
+
+/* ---- PORTFOLIO UI ---- */
+var pfAction=''; // 'create' o 'load'
+var pinBuffer='';
+
+function renderPfList(){
+  var list=document.getElementById('pfList');
+  // Portafogli salvati localmente
+  var saved=[];
+  try{saved=JSON.parse(localStorage.getItem('borsaSavedPf')||'[]');}catch(e){}
+
+  if(!saved.length){
+    list.innerHTML='<div class="pf-hint">Nessun portafoglio salvato.<br>Creane uno o caricane uno esistente.</div>';
+    return;
+  }
+  list.innerHTML=saved.map(function(pf){
+    var isActive=pf.id===currentPfId;
+    var safe=pf.id.replace(/'/g,"\\'");
+    return '<div class="pf-card'+(isActive?' active-pf':'')+'" onclick="selectPortfolio(\''+safe+'\')">' +
+      '<div class="pf-card-icon">📊</div>'+
+      '<div class="pf-card-info">'+
+        '<div class="pf-card-name">'+pf.name+'</div>'+
+        '<div class="pf-card-meta">ID: '+pf.id+' · '+pf.tickers.length+' titoli</div>'+
+      '</div>'+
+      (isActive?'<div class="pf-card-badge">attivo</div>':'')+
+    '</div>';
+  }).join('');
+}
+
+function selectPortfolio(id){
+  var saved=[];try{saved=JSON.parse(localStorage.getItem('borsaSavedPf')||'[]');}catch(e){}
+  var pf=saved.find(function(p){return p.id===id;});
+  if(!pf)return;
+  currentPfId=pf.id;currentPfName=pf.name;currentPin=pf.pin;
+  tickers=pf.tickers.slice();
+  try{localStorage.setItem('borsaPfId',currentPfId);localStorage.setItem('borsaPfName',currentPfName);localStorage.setItem('borsaPin',currentPin);}catch(e){}
+  saveLocal();stockData={};closeAllSheets();renderList();refreshAll();
+  showToast('✓ Portafoglio "'+pf.name+'" caricato');
+}
+
+function startCreatePortfolio(){
+  var name=document.getElementById('newPfName').value.trim();
+  if(!name){showToast('⚠ Inserisci un nome');return;}
+  pfAction='create';
+  document.getElementById('pfSheetTitle').textContent='Crea PIN';
+  document.getElementById('pinPrompt').textContent='Scegli un PIN a 4 cifre — ti servirà per accedere da altri dispositivi';
+  pinBuffer='';updatePinDots();
+  document.getElementById('pfListView').style.display='none';
+  document.getElementById('pfPinView').style.display='block';
+}
+
+function startLoadPortfolio(){
+  var id=document.getElementById('loadPfId').value.trim().toUpperCase();
+  if(!id){showToast('⚠ Inserisci l\'ID portafoglio');return;}
+  pfAction='load:'+id;
+  document.getElementById('pfSheetTitle').textContent='Inserisci PIN';
+  document.getElementById('pinPrompt').textContent='Inserisci il PIN del portafoglio '+id;
+  pinBuffer='';updatePinDots();
+  document.getElementById('pfListView').style.display='none';
+  document.getElementById('pfPinView').style.display='block';
+}
+
+function showPfList(){
+  document.getElementById('pfSheetTitle').textContent='I miei portafogli';
+  document.getElementById('pfListView').style.display='block';
+  document.getElementById('pfPinView').style.display='none';
+  pinBuffer='';pfAction='';
+}
+
+function pinDigit(d){
+  if(pinBuffer.length>=4)return;
+  pinBuffer+=d;updatePinDots();
+  if(pinBuffer.length===4)setTimeout(confirmPin,200);
+}
+function pinBack(){pinBuffer=pinBuffer.slice(0,-1);updatePinDots();}
+function updatePinDots(){
+  for(var i=0;i<4;i++){
+    var dot=document.getElementById('pd'+i);
+    if(dot)dot.classList.toggle('filled',i<pinBuffer.length);
+  }
+}
+
+async function confirmPin(){
+  var pin=pinBuffer;
+  if(pfAction==='create'){
+    var name=document.getElementById('newPfName').value.trim();
+    var id=generateId();
+    currentPfId=id;currentPfName=name;currentPin=pin;
+    try{localStorage.setItem('borsaPfId',id);localStorage.setItem('borsaPfName',name);localStorage.setItem('borsaPin',pin);}catch(e){}
+    // Salva in lista locale
+    var saved=[];try{saved=JSON.parse(localStorage.getItem('borsaSavedPf')||'[]');}catch(e){}
+    saved.push({id:id,name:name,pin:pin,tickers:tickers});
+    try{localStorage.setItem('borsaSavedPf',JSON.stringify(saved));}catch(e){}
+    // Salva sul cloud
+    var ok=await saveToCloud();
+    closeAllSheets();
+    document.getElementById('portfolioTitle').textContent=name;
+    updateMeta();
+    showToast(ok?'☁ Portafoglio "'+name+'" creato! ID: '+id:'✓ Creato in locale (cloud non raggiunto)');
+
+  } else if(pfAction.startsWith('load:')){
+    var loadId=pfAction.split(':')[1];
+    showToast('Caricamento…');
+    var pf=await loadFromCloud(loadId,pin);
+    if(!pf){showToast('⚠ ID o PIN errato');pinBuffer='';updatePinDots();return;}
+    currentPfId=pf.id;currentPfName=pf.name;currentPin=pin;
+    tickers=pf.tickers.slice();
+    try{localStorage.setItem('borsaPfId',pf.id);localStorage.setItem('borsaPfName',pf.name);localStorage.setItem('borsaPin',pin);}catch(e){}
+    saveLocal();
+    // Aggiungi a lista locale
+    var saved=[];try{saved=JSON.parse(localStorage.getItem('borsaSavedPf')||'[]');}catch(e){}
+    if(!saved.find(function(p){return p.id===pf.id;}))
+      saved.push({id:pf.id,name:pf.name,pin:pin,tickers:pf.tickers});
+    try{localStorage.setItem('borsaSavedPf',JSON.stringify(saved));}catch(e){}
+    stockData={};closeAllSheets();renderList();refreshAll();
+    showToast('✓ Portafoglio "'+pf.name+'" caricato!');
+  }
 }
 
 /* ---- TABS / CHIPS ---- */
 function setTab(el,key){
   currentTab=key;
-  document.querySelectorAll('.stab').forEach(function(t){ t.classList.remove('active'); });
-  el.classList.add('active'); renderChips();
+  document.querySelectorAll('.stab').forEach(function(t){t.classList.remove('active');});
+  el.classList.add('active');renderChips();
 }
 function renderChips(){
   var items=PRESETS[currentTab]||[];
@@ -717,80 +801,44 @@ function renderChips(){
 
 /* ---- ADD / REMOVE ---- */
 function addPreset(sym){
-  if(tickers.indexOf(sym)!==-1){ showToast('⚠ '+sym+' già in lista'); return; }
-  tickers.push(sym); save(); closeSheet(); renderList(); fetchAndRender(sym);
+  if(tickers.indexOf(sym)!==-1){showToast('⚠ '+sym+' già in lista');return;}
+  tickers.push(sym);saveLocal();closeAllSheets();renderList();fetchAndRender(sym);autoSaveCloud();
 }
 function removeTicker(sym){
   var short=sym.replace('.MI','').replace('-USD','').replace('=X','').replace('=F','');
-  tickers=tickers.filter(function(t){ return t!==sym; });
-  delete stockData[sym]; save(); renderList();
+  tickers=tickers.filter(function(t){return t!==sym;});
+  delete stockData[sym];saveLocal();renderList();autoSaveCloud();
   showToast('🗑 '+short+' rimosso');
 }
 
 /* ---- TOAST ---- */
 function showToast(msg){
-  var t=document.getElementById('toast');
-  t.textContent=msg; t.classList.add('show');
-  setTimeout(function(){ t.classList.remove('show'); },2200);
+  var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show');},2500);
 }
 
-/* ---- PWA ---- */
-var deferredPrompt = null;
-
-window.addEventListener('beforeinstallprompt', function(e) {
-  e.preventDefault();
-  deferredPrompt = e;
-  // Mostra bottone download nell'header
-  document.getElementById('installBtn').style.display = 'flex';
-});
-
-window.addEventListener('appinstalled', function() {
-  deferredPrompt = null;
-  document.getElementById('installBtn').style.display = 'none';
-  showToast('✓ App installata!');
-});
-
-function handleInstall() {
+/* ---- INSTALL ---- */
+var deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();deferredPrompt=e;});
+window.addEventListener('appinstalled',function(){deferredPrompt=null;showToast('✓ App installata!');});
+function handleInstall(){
   document.getElementById('installModal').classList.add('open');
-  // Se abbiamo il prompt nativo, aggiorna il testo del bottone
-  if (deferredPrompt) {
-    document.getElementById('installNowBtn').textContent = '⚡ Installa ora';
-  } else {
-    document.getElementById('installNowBtn').style.display = 'none';
-  }
+  if(!deferredPrompt)document.getElementById('installNowBtn').style.display='none';
+  else document.getElementById('installNowBtn').style.display='block';
 }
-
-function triggerInstall() {
-  if (deferredPrompt) {
-    deferredPrompt.prompt();
-    deferredPrompt.userChoice.then(function(r) {
-      deferredPrompt = null;
-      closeInstallModal();
-    });
-  } else {
-    closeInstallModal();
-    showToast('Usa il menu ⋮ di Chrome → Aggiungi a schermata Home');
-  }
+function triggerInstall(){
+  if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(function(){deferredPrompt=null;closeInstallModal();});}
+  else{closeInstallModal();showToast('Menu ⋮ → Aggiungi a schermata Home');}
 }
+function closeInstallModal(){document.getElementById('installModal').classList.remove('open');}
 
-function closeInstallModal() {
-  document.getElementById('installModal').classList.remove('open');
-}
-
-if('serviceWorker' in navigator){
-  window.addEventListener('load',function(){
-    navigator.serviceWorker.register('sw.js').catch(function(){});
-  });
-}
-
-// Mostra sempre il bottone install (l'utente potrebbe non averla ancora installata)
-setTimeout(function() {
-  document.getElementById('installBtn').style.display = 'flex';
-}, 1000);
+if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});}
 
 /* ---- BOOT ---- */
-initWorkerUI(); renderChips(); renderList();
-if(workerUrl) refreshAll();
+initWorkerUI();renderChips();renderList();
+if(workerUrl)refreshAll();
+// Mostra ID portafoglio attivo nel footer se presente
+if(currentPfId)updateMeta();
 </script>
 </body>
 </html>
