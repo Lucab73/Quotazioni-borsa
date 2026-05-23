@@ -471,7 +471,15 @@ if(!tickers.length)tickers=['ENI.MI','UCG.MI','AAPL','BTC-USD'];
 var stockData={},editMode=false,currentTab='azioni-it';
 var countdownSec=60,countdownInterval=null;
 
-function saveLocal(){try{localStorage.setItem('borsaTickers',JSON.stringify(tickers));}catch(e){}}
+function saveLocal(){
+  try{localStorage.setItem('borsaTickers',JSON.stringify(tickers));}catch(e){}
+  // Aggiorna anche il portafoglio nella lista locale
+  if(currentPfId){
+    var saved=getSavedPf();
+    var idx=saved.findIndex(function(p){return p.id===currentPfId;});
+    if(idx!==-1){saved[idx].tickers=tickers.slice();setSavedPf(saved);}
+  }
+}
 
 /* ---- CLOUD SAVE/LOAD ---- */
 async function saveToCloud(){
@@ -695,14 +703,19 @@ function renderPfList(){
 }
 
 function selectPortfolio(id){
-  var saved=[];try{saved=JSON.parse(localStorage.getItem('borsaSavedPf')||'[]');}catch(e){}
+  // Salva prima il portafoglio corrente (cloud + locale)
+  if(currentPfId && currentPfId!==id){
+    syncCurrentToLocal();
+    autoSaveCloud(); // fire & forget
+  }
+  var saved=getSavedPf();
   var pf=saved.find(function(p){return p.id===id;});
   if(!pf)return;
   currentPfId=pf.id;currentPfName=pf.name;currentPin=pf.pin;
   tickers=pf.tickers.slice();
   try{localStorage.setItem('borsaPfId',currentPfId);localStorage.setItem('borsaPfName',currentPfName);localStorage.setItem('borsaPin',currentPin);}catch(e){}
   saveLocal();stockData={};closeAllSheets();renderList();refreshAll();
-  showToast('✓ Portafoglio "'+pf.name+'" caricato');
+  showToast('✓ "'+pf.name+'" caricato');
 }
 
 function startCreatePortfolio(){
@@ -727,6 +740,42 @@ function startLoadPortfolio(){
   document.getElementById('pfPinView').style.display='block';
 }
 
+
+function renamePf(id, currentName){
+  var newName=prompt('Nuovo nome per il portafoglio:', currentName);
+  if(!newName||!newName.trim()) return;
+  newName=newName.trim();
+  var saved=getSavedPf();
+  var idx=saved.findIndex(function(p){return p.id===id;});
+  if(idx===-1) return;
+  saved[idx].name=newName;
+  setSavedPf(saved);
+  if(id===currentPfId){
+    currentPfName=newName;
+    try{localStorage.setItem('borsaPfName',newName);}catch(e){}
+    document.getElementById('portfolioTitle').textContent=newName;
+    autoSaveCloud();
+  }
+  renderPfList();
+  showToast('✓ Rinominato in "'+newName+'"');
+}
+
+function deletePf(id){
+  var saved=getSavedPf();
+  var pf=saved.find(function(p){return p.id===id;});
+  if(!pf) return;
+  if(!confirm('Eliminare il portafoglio "'+pf.name+'"?\nI dati verranno rimossi dal dispositivo (non dal cloud).')) return;
+  saved=saved.filter(function(p){return p.id!==id;});
+  setSavedPf(saved);
+  // Se era quello attivo, resetta
+  if(id===currentPfId){
+    currentPfId='';currentPfName='My Portfolio';currentPin='';
+    try{localStorage.removeItem('borsaPfId');localStorage.removeItem('borsaPfName');localStorage.removeItem('borsaPin');}catch(e){}
+    document.getElementById('portfolioTitle').textContent='My Portfolio';
+  }
+  renderPfList();
+  showToast('🗑 Portafoglio eliminato dal dispositivo');
+}
 function showPfList(){
   document.getElementById('pfSheetTitle').textContent='I miei portafogli';
   document.getElementById('pfListView').style.display='block';
@@ -755,9 +804,9 @@ async function confirmPin(){
     currentPfId=id;currentPfName=name;currentPin=pin;
     try{localStorage.setItem('borsaPfId',id);localStorage.setItem('borsaPfName',name);localStorage.setItem('borsaPin',pin);}catch(e){}
     // Salva in lista locale
-    var saved=[];try{saved=JSON.parse(localStorage.getItem('borsaSavedPf')||'[]');}catch(e){}
-    saved.push({id:id,name:name,pin:pin,tickers:tickers});
-    try{localStorage.setItem('borsaSavedPf',JSON.stringify(saved));}catch(e){}
+    var saved=getSavedPf();
+    saved.push({id:id,name:name,pin:pin,tickers:tickers.slice()});
+    setSavedPf(saved);
     // Salva sul cloud
     var ok=await saveToCloud();
     closeAllSheets();
@@ -774,11 +823,12 @@ async function confirmPin(){
     tickers=pf.tickers.slice();
     try{localStorage.setItem('borsaPfId',pf.id);localStorage.setItem('borsaPfName',pf.name);localStorage.setItem('borsaPin',pin);}catch(e){}
     saveLocal();
-    // Aggiungi a lista locale
-    var saved=[];try{saved=JSON.parse(localStorage.getItem('borsaSavedPf')||'[]');}catch(e){}
-    if(!saved.find(function(p){return p.id===pf.id;}))
-      saved.push({id:pf.id,name:pf.name,pin:pin,tickers:pf.tickers});
-    try{localStorage.setItem('borsaSavedPf',JSON.stringify(saved));}catch(e){}
+    // Aggiungi/aggiorna lista locale
+    var saved=getSavedPf();
+    var ei=saved.findIndex(function(p){return p.id===pf.id;});
+    if(ei===-1) saved.push({id:pf.id,name:pf.name,pin:pin,tickers:pf.tickers.slice()});
+    else saved[ei]={id:pf.id,name:pf.name,pin:pin,tickers:pf.tickers.slice()};
+    setSavedPf(saved);
     stockData={};closeAllSheets();renderList();refreshAll();
     showToast('✓ Portafoglio "'+pf.name+'" caricato!');
   }
