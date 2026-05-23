@@ -188,6 +188,30 @@ body { font-family: var(--sans); background: var(--bg); color: var(--text);
   padding:9px 18px;font-family:var(--mono);font-size:12px;color:var(--text);
   transition:transform .3s;z-index:200;white-space:nowrap;pointer-events:none; }
 .toast.show { transform:translateX(-50%) translateY(0); }
+
+/* ── INSTALL MODAL ── */
+.install-modal { position:fixed; inset:0; z-index:200; display:flex;
+  align-items:flex-end; justify-content:center;
+  background:rgba(0,0,0,0.6); opacity:0; pointer-events:none; transition:opacity .3s; }
+.install-modal.open { opacity:1; pointer-events:all; }
+.install-box { background:var(--card2); border-radius:22px 22px 0 0;
+  padding:20px 22px calc(28px + env(safe-area-inset-bottom));
+  width:100%; max-width:480px; }
+.install-box h3 { font-size:17px; font-weight:700; margin-bottom:6px; }
+.install-box p { font-size:13px; color:var(--muted); line-height:1.6; margin-bottom:16px; }
+.install-steps { display:flex; flex-direction:column; gap:12px; margin-bottom:20px; }
+.install-step { display:flex; align-items:center; gap:12px; }
+.step-num { width:28px; height:28px; border-radius:50%; background:var(--accent);
+  color:#fff; font-size:13px; font-weight:700; display:flex;
+  align-items:center; justify-content:center; flex-shrink:0; }
+.step-text { font-size:13px; line-height:1.4; }
+.step-text strong { color:var(--text); }
+.step-text span { color:var(--muted); }
+.install-actions { display:flex; gap:10px; }
+.btn-install-primary { flex:1; background:var(--accent); border:none; border-radius:12px;
+  padding:13px; color:#fff; font-size:14px; font-weight:600; cursor:pointer; }
+.btn-install-secondary { background:rgba(255,255,255,0.07); border:1px solid var(--border2);
+  border-radius:12px; padding:13px 18px; color:var(--muted); font-size:14px; cursor:pointer; }
 </style>
 </head>
 <body>
@@ -204,12 +228,19 @@ body { font-family: var(--sans); background: var(--bg); color: var(--text);
         <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
       </svg>
     </button>
-    <button class="btn-hdr" id="editBtn" onclick="toggleEdit()" title="Modifica">
+    <button class="btn-hdr" id="editBtn" onclick="toggleEdit()" title="Modifica/Riordina">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
       </svg>
     </button>
-    <button class="btn-hdr" onclick="openSheet()" title="Aggiungi">
+    <button class="btn-hdr" id="installBtn" onclick="handleInstall()" title="Installa app" style="display:none">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+    </button>
+    <button class="btn-hdr" onclick="openSheet()" title="Aggiungi titolo">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
         <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
       </svg>
@@ -271,6 +302,39 @@ body { font-family: var(--sans); background: var(--bg); color: var(--text);
   <div class="sheet-chips" id="sheetChips"></div>
 </div>
 
+
+<!-- Install modal -->
+<div class="install-modal" id="installModal" onclick="closeInstallModal()">
+  <div class="install-box" onclick="event.stopPropagation()">
+    <h3>📲 Installa Borsa Live</h3>
+    <p>Aggiungi l'app alla schermata Home per accedervi come un'app nativa.</p>
+    <div class="install-steps">
+      <div class="install-step">
+        <div class="step-num">1</div>
+        <div class="step-text">
+          <strong>Tocca i tre puntini</strong> <span>⋮ in alto a destra in Chrome</span>
+        </div>
+      </div>
+      <div class="install-step">
+        <div class="step-num">2</div>
+        <div class="step-text">
+          <strong>Seleziona "Aggiungi a schermata Home"</strong>
+          <span> oppure "Installa app"</span>
+        </div>
+      </div>
+      <div class="install-step">
+        <div class="step-num">3</div>
+        <div class="step-text">
+          <strong>Conferma</strong> <span>e l'icona apparirà sulla Home 🎉</span>
+        </div>
+      </div>
+    </div>
+    <div class="install-actions">
+      <button class="btn-install-primary" id="installNowBtn" onclick="triggerInstall()">Installa ora</button>
+      <button class="btn-install-secondary" onclick="closeInstallModal()">Chiudi</button>
+    </div>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -671,11 +735,58 @@ function showToast(msg){
 }
 
 /* ---- PWA ---- */
+var deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', function(e) {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Mostra bottone download nell'header
+  document.getElementById('installBtn').style.display = 'flex';
+});
+
+window.addEventListener('appinstalled', function() {
+  deferredPrompt = null;
+  document.getElementById('installBtn').style.display = 'none';
+  showToast('✓ App installata!');
+});
+
+function handleInstall() {
+  document.getElementById('installModal').classList.add('open');
+  // Se abbiamo il prompt nativo, aggiorna il testo del bottone
+  if (deferredPrompt) {
+    document.getElementById('installNowBtn').textContent = '⚡ Installa ora';
+  } else {
+    document.getElementById('installNowBtn').style.display = 'none';
+  }
+}
+
+function triggerInstall() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(function(r) {
+      deferredPrompt = null;
+      closeInstallModal();
+    });
+  } else {
+    closeInstallModal();
+    showToast('Usa il menu ⋮ di Chrome → Aggiungi a schermata Home');
+  }
+}
+
+function closeInstallModal() {
+  document.getElementById('installModal').classList.remove('open');
+}
+
 if('serviceWorker' in navigator){
   window.addEventListener('load',function(){
     navigator.serviceWorker.register('sw.js').catch(function(){});
   });
 }
+
+// Mostra sempre il bottone install (l'utente potrebbe non averla ancora installata)
+setTimeout(function() {
+  document.getElementById('installBtn').style.display = 'flex';
+}, 1000);
 
 /* ---- BOOT ---- */
 initWorkerUI(); renderChips(); renderList();
