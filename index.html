@@ -36,7 +36,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);
 .header-sub{font-family:var(--mono);font-size:11px;color:var(--muted)}
 .header-btns{display:flex;align-items:center;gap:14px}
 
-/* PULSANTI HEADER FIX: Hover solo su desktop, classe spinning */
+/* PULSANTI HEADER FIX */
 .btn-hdr{background:none;border:none;cursor:pointer;color:var(--muted);
   padding:4px;transition:color .15s;display:flex;align-items:center;
   -webkit-tap-highlight-color:transparent}
@@ -505,7 +505,8 @@ var PRESETS={
   'materie':[{sym:'GC=F',label:'Oro'},{sym:'SI=F',label:'Argento'},{sym:'CL=F',label:'Petrolio WTI'},{sym:'BZ=F',label:'Brent'},{sym:'NG=F',label:'Gas'},{sym:'HG=F',label:'Rame'}],
   'forex':[{sym:'EURUSD=X',label:'EUR/USD'},{sym:'GBPUSD=X',label:'GBP/USD'},{sym:'USDJPY=X',label:'USD/JPY'},{sym:'EURGBP=X',label:'EUR/GBP'},{sym:'USDCHF=X',label:'USD/CHF'},{sym:'EURJPY=X',label:'EUR/JPY'}],
   'bond':[
-    {sym:'BTPI.MI',label:'ETF BTP Italia'},
+    {sym:'IPIT.MI',label:'iShares ETF BTP'},
+    {sym:'BTP10.MI',label:'Lyxor BTP 10Y'},
     {sym:'IT0005618890',label:'BTP 2029 3,35%'},
     {sym:'IT0005534141',label:'BTP 2072 2,15%'},
     {sym:'IT0005480980',label:'BTP 2031 0,95%'},
@@ -634,7 +635,7 @@ function onSearchInput(val){
   
   // Se è un ISIN, eseguiamo subito la ricerca veloce
   if(isISIN(val)){
-    res.innerHTML='<div class="search-loading"><span></span><span></span><span></span></div>';
+    res.innerHTML='<div class="search-hint" style="color:var(--accent2)">🔍 Ricerca ISIN: '+val.toUpperCase()+'…</div>';
   } else {
     res.innerHTML='<div class="search-loading"><span></span><span></span><span></span></div>';
   }
