@@ -341,11 +341,6 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);
       autocomplete="off" autocorrect="off" oninput="onSearchInput(this.value)">
   </div>
   <div id="searchResults" style="display:none"></div>
-  <div style="padding:0 18px 8px;flex-shrink:0" id="isinHint">
-    <span style="font-family:var(--mono);font-size:10px;color:var(--muted)">
-      💡 Puoi cercare per nome, simbolo o <strong style="color:var(--accent2)">codice ISIN</strong> (es. IT0005534141)
-    </span>
-  </div>
   <div class="sheet-divider" id="sheetDivider"></div>
   <div class="sheet-tabs">
     <div class="stab active" onclick="setTab(this,'azioni-it')">🇮🇹 IT</div>
@@ -354,7 +349,6 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);
     <div class="stab" onclick="setTab(this,'crypto')">₿ Crypto</div>
     <div class="stab" onclick="setTab(this,'materie')">🥇 Materie</div>
     <div class="stab" onclick="setTab(this,'forex')">💱 Forex</div>
-    <div class="stab" onclick="setTab(this,'bond')">📜 Obblig.</div>
   </div>
   <div class="sheet-chips" id="sheetChips"></div>
 </div>
@@ -503,21 +497,7 @@ var PRESETS={
   'etf':[{sym:'SWDA.MI',label:'iShares World'},{sym:'VWCE.MI',label:'Vanguard All-W'},{sym:'CSPX.MI',label:'iShares S&P500'},{sym:'XDWD.MI',label:'Xtrackers World'},{sym:'EIMI.MI',label:'iShares EM'},{sym:'PHAU.MI',label:'ETC Oro fisico'},{sym:'BCOIN.MI',label:'ETP Bitcoin'},{sym:'BTPI.MI',label:'ETF BTP Italia'}],
   'crypto':[{sym:'BTC-USD',label:'Bitcoin'},{sym:'ETH-USD',label:'Ethereum'},{sym:'SOL-USD',label:'Solana'},{sym:'BNB-USD',label:'BNB'},{sym:'XRP-USD',label:'XRP'},{sym:'ADA-USD',label:'Cardano'}],
   'materie':[{sym:'GC=F',label:'Oro'},{sym:'SI=F',label:'Argento'},{sym:'CL=F',label:'Petrolio WTI'},{sym:'BZ=F',label:'Brent'},{sym:'NG=F',label:'Gas'},{sym:'HG=F',label:'Rame'}],
-  'forex':[{sym:'EURUSD=X',label:'EUR/USD'},{sym:'GBPUSD=X',label:'GBP/USD'},{sym:'USDJPY=X',label:'USD/JPY'},{sym:'EURGBP=X',label:'EUR/GBP'},{sym:'USDCHF=X',label:'USD/CHF'},{sym:'EURJPY=X',label:'EUR/JPY'}],
-  'bond':[
-    {sym:'BTPI.MI',label:'ETF BTP Italia'},
-    {sym:'IT0005618890',label:'BTP 2029 3,35%'},
-    {sym:'IT0005534141',label:'BTP 2072 2,15%'},
-    {sym:'IT0005480980',label:'BTP 2031 0,95%'},
-    {sym:'IT0005209208',label:'BTP 2026 0,05%'},
-    {sym:'IT0005437147',label:'BTP 2030 1,65%'},
-    {sym:'XS2314660700',label:'ENI 2031'},
-    {sym:'XS2520271695',label:'Enel 2029'},
-    {sym:'IT0005252520',label:'CCT 2024'},
-    {sym:'IBTS.MI',label:'ETF BTP Short'},
-    {sym:'XGSH.MI',label:'ETF Gov Bond EUR'},
-    {sym:'IEAG.MI',label:'ETF Agg Bond EUR'},
-  ]
+  'forex':[{sym:'EURUSD=X',label:'EUR/USD'},{sym:'GBPUSD=X',label:'GBP/USD'},{sym:'USDJPY=X',label:'USD/JPY'},{sym:'EURGBP=X',label:'EUR/GBP'},{sym:'USDCHF=X',label:'USD/CHF'},{sym:'EURJPY=X',label:'EUR/JPY'}]
 };
 
 var COLORS=['#4f7aff','#7c6af7','#e8504a','#22c97a','#f59e0b','#06b6d4','#ec4899','#8b5cf6','#10b981','#f97316'];
@@ -624,21 +604,13 @@ async function fetchStock(sym){
 
 /* ---- FETCH SEARCH ---- */
 var searchTimer=null;
-function isISIN(s){return /^[A-Z]{2}[A-Z0-9]{10}$/.test(s.trim().toUpperCase());}
-
 function onSearchInput(val){
   val=val.trim();
   var res=document.getElementById('searchResults'),div=document.getElementById('sheetDivider');
   if(!val){clearSearch();return;}
   res.style.display='block';div.style.display='none';
-  // Se sembra un ISIN, mostra subito un hint mentre cerca
-  if(isISIN(val)){
-    res.innerHTML='<div class="search-hint" style="color:var(--accent2)">🔍 Ricerca ISIN: '+val.toUpperCase()+'…</div>';
-  } else {
-    res.innerHTML='<div class="search-loading"><span></span><span></span><span></span></div>';
-  }
-  clearTimeout(searchTimer);
-  searchTimer=setTimeout(function(){doSearch(val.toUpperCase());},isISIN(val)?100:380);
+  res.innerHTML='<div class="search-loading"><span></span><span></span><span></span></div>';
+  clearTimeout(searchTimer);searchTimer=setTimeout(function(){doSearch(val);},380);
 }
 async function doSearch(q){
   if(!workerUrl){document.getElementById('searchResults').innerHTML='<div class="search-hint">⚠ Configura prima il Worker</div>';return;}
@@ -647,7 +619,7 @@ async function doSearch(q){
     var j=await r.json();
     if(document.getElementById('searchInput').value.trim()!==q)return;
     var quotes=(j.quotes||[]).filter(function(x){
-      return x.symbol&&['EQUITY','ETF','CRYPTOCURRENCY','FUTURE','CURRENCY','BOND','MUTUALFUND','INDEX'].indexOf(x.quoteType)!==-1;
+      return x.symbol&&['EQUITY','ETF','CRYPTOCURRENCY','FUTURE','CURRENCY'].indexOf(x.quoteType)!==-1;
     }).slice(0,8);
     if(!quotes.length){document.getElementById('searchResults').innerHTML='<div class="search-hint">Nessun risultato</div>';return;}
     document.getElementById('searchResults').innerHTML=quotes.map(function(x){
@@ -655,7 +627,6 @@ async function doSearch(q){
       var added=tickers.indexOf(sym)!==-1;
       var safe=sym.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
       var sn=name.length>26?name.substring(0,24)+'…':name;
-    var typeLabel=x.quoteType==='BOND'?' · Bond':x.quoteType==='MUTUALFUND'?' · Fund':x.quoteType==='INDEX'?' · Index':'';
       return '<div class="result-row" onclick="addFromSearch(\''+safe+'\')">' +
         '<div class="result-avatar" style="background:'+aColor(sym)+'">'+aLetter(name,sym)+'</div>'+
         '<div class="result-info"><div class="result-name">'+sn+'</div>'+
