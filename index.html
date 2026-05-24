@@ -160,7 +160,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);
 .pf-card{background:rgba(255,255,255,0.05);border:1px solid var(--border2);border-radius:14px;
   padding:12px 14px;margin-bottom:8px;transition:border-color .15s}
 .pf-card.active-pf{border-color:var(--green)}
-.pf-card-top{display:flex;align-items:center;gap:10px}
+.pf-card-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .pf-card-icon{font-size:24px;flex-shrink:0}
 .pf-card-info{flex:1;min-width:0;cursor:pointer}
 .pf-card-name{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -174,13 +174,13 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);
 .btn-pf-sm.danger{color:var(--red);border-color:rgba(232,80,74,0.25)}
 
 /* RENAME INPUT inline */
-.pf-rename-row{display:flex;gap:6px;margin-top:8px}
-.pf-rename-input{flex:1;background:rgba(255,255,255,0.07);border:1px solid var(--accent);
-  border-radius:8px;padding:7px 10px;color:var(--text);font-size:13px;outline:none}
-.btn-rename-ok{background:var(--accent);border:none;border-radius:8px;padding:7px 12px;
-  color:#fff;font-size:12px;font-weight:600;cursor:pointer}
+.pf-rename-row{display:flex;gap:8px;align-items:center;margin-top:2px;width:100%}
+.pf-rename-input{flex:1;width:100%;min-width:0;background:rgba(255,255,255,0.07);border:1px solid var(--accent);
+  border-radius:8px;padding:8px 12px;color:var(--text);font-size:14px;outline:none}
+.btn-rename-ok{background:var(--accent);border:none;border-radius:8px;padding:8px 14px;
+  color:#fff;font-size:13px;font-weight:600;cursor:pointer;flex-shrink:0}
 .btn-rename-cancel{background:none;border:1px solid var(--border2);border-radius:8px;
-  padding:7px 10px;color:var(--muted);font-size:12px;cursor:pointer}
+  padding:8px 12px;color:var(--muted);font-size:13px;cursor:pointer;flex-shrink:0}
 
 /* PIN */
 .pin-display{display:flex;gap:10px;justify-content:center;margin:16px 0}
@@ -392,7 +392,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);
       <button class="num-btn" onclick="pinDigit('4')">4</button>
       <button class="num-btn" onclick="pinDigit('5')">5</button>
       <button class="num-btn" onclick="pinDigit('6')">6</button>
-      <button class="num-btn" onclick="pinDigit('7')">7</button>
+      <button class="num-btn" onclick="event.stopPropagation(); pinDigit('7')">7</button>
       <button class="num-btn" onclick="pinDigit('8')">8</button>
       <button class="num-btn" onclick="pinDigit('9')">9</button>
       <button class="num-btn empty"></button>
@@ -670,7 +670,7 @@ function stockRow(sym,d){
     '<div class="row-info"><div class="row-name">'+sn+'</div><div class="row-sym">'+sym+'</div></div>'+
     '<div class="row-price"><div class="row-value">'+fmtP(d.price)+'</div>'+
     '<div class="row-change '+cls+'">'+sign+fmt(ch)+' ('+sign+fmt(pct)+'%)</div></div>'+
-    (editMode?'<button class="btn-del" onclick="removeTicker(\''+safe+'\')">✕</button>':'')+
+    (editMode?'<button class="btn-del" onclick="removeTicker(\''+safe+'\')">✕</button>'+
   '</div>';
 }
 
