@@ -710,14 +710,26 @@ async function fetchAndRender(sym){
 
 async function refreshAll(){
   var rb=document.getElementById('refreshBtn');
-  if(rb){rb.style.animation='spin .7s linear infinite';rb.style.color='var(--accent2)';}
-  if(!workerUrl){renderList();return;}
+  if(rb){
+    var svg=rb.querySelector('svg');
+    if(svg){svg.style.animation='spin .7s linear infinite';svg.style.transformOrigin='center';}
+    rb.style.color='var(--accent2)';
+  }
+  if(!workerUrl){
+    var rb2=document.getElementById('refreshBtn');
+    if(rb2){var s2=rb2.querySelector('svg');if(s2)s2.style.animation='';}
+    renderList();return;
+  }
   // Carica tutti in parallelo, ogni titolo si aggiorna appena arriva
   tickers.forEach(function(t){if(stockData[t]===undefined)updateRow(t);});
   await Promise.all(tickers.map(function(t){return fetchAndRender(t);}));
   updateMeta();resetCountdown();
   var rb=document.getElementById('refreshBtn');
-  if(rb){rb.style.animation='';rb.style.color='';}
+  if(rb){
+    var svg=rb.querySelector('svg');
+    if(svg){svg.style.animation='';}
+    rb.style.color='';
+  }
 }
 
 function resetCountdown(){
@@ -1126,9 +1138,13 @@ function removeFromDetail(){
   closeDetail();
 }
 /* ---- TOAST ---- */
+var _toastTimer=null;
 function showToast(msg){
-  var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
-  setTimeout(function(){t.classList.remove('show');},2500);
+  var t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer=setTimeout(function(){t.classList.remove('show');},2500);
 }
 
 /* ---- INSTALL ---- */
