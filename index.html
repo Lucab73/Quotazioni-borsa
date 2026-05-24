@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Borsa Live">
 <meta name="theme-color" content="#0a0a0f">
-<link rel="apple-touch-icon" href="icon-192.png">
+<link class="apple-touch-icon" href="icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -507,11 +507,11 @@ var PRESETS={
   'bond':[
     {sym:'IPIT.MI',label:'iShares ETF BTP'},
     {sym:'BTP10.MI',label:'Lyxor BTP 10Y'},
-    {sym:'IT0005618890',label:'BTP 2029 3,35%'},
-    {sym:'IT0005534141',label:'BTP 2072 2,15%'},
-    {sym:'IT0005480980',label:'BTP 2031 0,95%'},
-    {sym:'IT0005209208',label:'BTP 2026 0,05%'},
-    {sym:'IT0005437147',label:'BTP 2030 1,65%'},
+    {sym:'IT0005618890',label:'BTP 2029 3.35%'},
+    {sym:'IT0005534141',label:'BTP 2072 2.15%'},
+    {sym:'IT0005480980',label:'BTP 2031 0.95%'},
+    {sym:'IT0005209208',label:'BTP 2026 0.05%'},
+    {sym:'IT0005437147',label:'BTP 2030 1.65%'},
     {sym:'XS2314660700',label:'ENI 2031'},
     {sym:'XS2520271695',label:'Enel 2029'},
     {sym:'IT0005252520',label:'CCT 2024'},
@@ -633,7 +633,6 @@ function onSearchInput(val){
   if(!val){clearSearch();return;}
   res.style.display='block';div.style.display='none';
   
-  // Se è un ISIN, eseguiamo subito la ricerca veloce
   if(isISIN(val)){
     res.innerHTML='<div class="search-hint" style="color:var(--accent2)">🔍 Ricerca ISIN: '+val.toUpperCase()+'…</div>';
   } else {
@@ -649,8 +648,6 @@ async function doSearch(q){
   var isIsinCode = isISIN(q);
   var html = '';
 
-  // Se l'utente ha inserito un ISIN valido, prepariamo IMMEDIATAMENTE un blocco 
-  // che permette di aggiungerlo alla lista. Ignoriamo se Yahoo non ce lo propone nell'elenco.
   if(isIsinCode) {
     var added = tickers.indexOf(q) !== -1;
     html += '<div class="result-row" style="border:1px solid rgba(124,106,247,0.4); background:rgba(124,106,247,0.08)" onclick="addFromSearch(\''+q+'\')">' +
@@ -692,7 +689,6 @@ async function doSearch(q){
     document.getElementById('searchResults').innerHTML = html;
 
   } catch(e) {
-    // Se c'è un errore API ma l'utente ha scritto un ISIN, mostriamo comunque il tasto di aggiunta ISIN
     if(isIsinCode) {
        document.getElementById('searchResults').innerHTML = html;
     } else {
@@ -781,9 +777,9 @@ function updateMeta(){
 
 /* Carica UN titolo e aggiorna solo quella riga */
 async function fetchAndRender(sym){
-  updateRow(sym); // mostra skeleton subito
+  updateRow(sym);
   try{stockData[sym]=await fetchStock(sym);}catch(e){stockData[sym]={error:true};}
-  updateRow(sym); // aggiorna con dati reali
+  updateRow(sym);
   updateMeta();renderChips();
 }
 
@@ -880,7 +876,7 @@ function openAddSheet(){
   setTimeout(function(){document.getElementById('searchInput').focus();},400);
 }
 function openPortfolioSheet(){
-  syncCurrentPf(); // aggiorna tickers prima di mostrare
+  syncCurrentPf();
   document.getElementById('overlay').classList.add('open');
   document.getElementById('portfolioSheet').classList.add('open');
   renderPfList();
@@ -916,7 +912,6 @@ function renderPfList(){
           '<button class="btn-pf-sm danger" onclick="deletePf(\''+safeId+'\')">🗑</button>'+
         '</div>'+
       '</div>'+
-      // Area rinomina (nascosta di default)
       '<div class="pf-rename-row" id="rename-'+pf.id+'" style="display:none">'+
         '<input class="pf-rename-input" id="rename-input-'+pf.id+'" value="'+pf.name+'" maxlength="30" onkeydown="if(event.key===\'Enter\')confirmRename(\''+safeId+'\')">'+
         '<button class="btn-rename-ok" onclick="confirmRename(\''+safeId+'\')">✓</button>'+
@@ -927,7 +922,6 @@ function renderPfList(){
 }
 
 function selectPf(id){
-  // Salva portafoglio corrente prima di cambiare
   syncCurrentPf();
   if(currentPfId)autoSave();
 
@@ -945,7 +939,6 @@ function selectPf(id){
 }
 
 function startRename(id){
-  // Nascondi altri rename aperti
   document.querySelectorAll('[id^="rename-"]').forEach(function(el){
     if(el.id!=='rename-'+id)el.style.display='none';
   });
@@ -983,7 +976,6 @@ function deletePf(id){
   var saved=getSaved();
   var pf=saved.find(function(p){return p.id===id;});
   if(!pf)return;
-  // Usa confirm solo su desktop; su mobile mostra comunque
   var ok=window.confirm?window.confirm('Eliminare "'+pf.name+'"?\nViene rimosso dal dispositivo.'):true;
   if(!ok)return;
   saved=saved.filter(function(p){return p.id!==id;});setSaved(saved);
@@ -1044,7 +1036,6 @@ async function confirmPin(){
     showToast('Caricamento…');
     var pf=await loadCloud(loadId,pin);
     if(!pf){showToast('⚠ ID o PIN errato');pinBuf='';updateDots();return;}
-    // Salva portafoglio corrente prima
     syncCurrentPf();if(currentPfId)await saveCloud();
     currentPfId=pf.id;currentPfName=pf.name;currentPin=pin;
     tickers=pf.tickers.slice();
@@ -1079,7 +1070,6 @@ function addTicker(sym){
   if(tickers.indexOf(sym)!==-1){showToast('⚠ '+sym+' già in lista');return;}
   tickers.push(sym);saveLocal();
   closeAllSheets();
-  // Aggiorna immediatamente: aggiungi skeleton poi carica
   var list=document.getElementById('stockList');
   var tmp=document.createElement('div');tmp.innerHTML=skelRow(sym);
   list.appendChild(tmp.firstElementChild);
@@ -1094,7 +1084,6 @@ function removeTicker(sym){
   tickers=tickers.filter(function(t){return t!==sym;});
   delete stockData[sym];
   saveLocal();
-  // Rimuovi la riga immediatamente senza ridisegnare tutto
   var el=document.getElementById(escId(sym));if(el)el.remove();
   updateMeta();renderChips();
   autoSave();
@@ -1185,7 +1174,6 @@ function saveCarico(){
   var caricos=getCaricos();
   caricos[detailSym]={price:price,qty:isNaN(qty)||qty<=0?null:qty};
   setCaricos(caricos);
-  // Aggiorna PnL
   renderPnl(detailSym,stockData[detailSym],caricos[detailSym]);
   showToast('✓ Prezzo di carico salvato');
 }
@@ -1216,9 +1204,8 @@ function showToast(msg, duration) {
   duration = duration || 2500;
   var t = document.getElementById('toast');
   t.textContent = msg;
-  // Forza reflow per riavviare l'animazione anche se era già visibile
   t.classList.remove('show');
-  void t.offsetHeight; // reflow
+  void t.offsetHeight;
   t.classList.add('show');
   clearTimeout(_toastTimer);
   _toastTimer = setTimeout(function() { t.classList.remove('show'); }, duration);
