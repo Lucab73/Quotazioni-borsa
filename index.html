@@ -838,24 +838,24 @@ function renderPfList(){
   list.innerHTML=saved.map(function(pf){
     var isActive=pf.id===currentPfId;
     var safeId=pf.id.replace(/'/g,"\\'");
-    return '<div class="pf-card'+(isActive?' active-pf':'')+'" id="pfc-'+pf.id+'" data-pfid="'+pf.id+'">'+
+    return '<div class="pf-card'+(isActive?' active-pf':'')+'" id="pfc-'+pf.id+'">'+
       '<div class="pf-card-top">'+
         '<div class="pf-card-icon" onclick="selectPf(\''+safeId+'\')">📊</div>'+
         '<div class="pf-card-info" onclick="selectPf(\''+safeId+'\')">'+
-          '<div class="pf-card-name" id="pfname-text-'+pf.id+'">'+pf.name+'</div>'+
+          '<div class="pf-card-name">'+pf.name+'</div>'+
           '<div class="pf-card-meta">ID: <b style="font-family:var(--mono)">'+pf.id+'</b> · '+pf.tickers.length+' titoli</div>'+
         '</div>'+
         '<div class="pf-card-actions">'+
           (isActive?'<div class="pf-badge">attivo</div>':'')+
-          '<button class="btn-pf-sm" onclick="event.stopPropagation();startRename(\''+safeId+'\')">✏️</button>'+
-          '<button class="btn-pf-sm danger" onclick="event.stopPropagation();deletePf(\''+safeId+'\')">🗑</button>'+
+          '<button class="btn-pf-sm" onclick="startRename(\''+safeId+'\')">✏️</button>'+
+          '<button class="btn-pf-sm danger" onclick="deletePf(\''+safeId+'\')">🗑</button>'+
         '</div>'+
       '</div>'+
-      // Area rinomina (nascosta di default, con isolamento eventi)
-      '<div class="pf-rename-row" id="rename-'+pf.id+'" style="display:none" onclick="event.stopPropagation()">'+
-        '<input class="pf-rename-input" id="rename-input-'+pf.id+'" value="'+pf.name+'" maxlength="30" onkeydown="if(event.key===\'Enter\'){event.preventDefault();confirmRename(\''+safeId+'\');}">'+
-        '<button class="btn-rename-ok" onclick="event.stopPropagation();confirmRename(\''+safeId+'\')">✓</button>'+
-        '<button class="btn-rename-cancel" onclick="event.stopPropagation();cancelRename(\''+safeId+'\')">✕</button>'+
+      // Area rinomina (nascosta di default)
+      '<div class="pf-rename-row" id="rename-'+pf.id+'" style="display:none">'+
+        '<input class="pf-rename-input" id="rename-input-'+pf.id+'" value="'+pf.name+'" maxlength="30" onkeydown="if(event.key===\'Enter\')confirmRename(\''+safeId+'\')">'+
+        '<button class="btn-rename-ok" onclick="confirmRename(\''+safeId+'\')">✓</button>'+
+        '<button class="btn-rename-cancel" onclick="cancelRename(\''+safeId+'\')">✕</button>'+
       '</div>'+
     '</div>';
   }).join('');
@@ -888,13 +888,7 @@ function startRename(id){
   if(!row)return;
   row.style.display='flex';
   var inp=document.getElementById('rename-input-'+id);
-  if(inp){
-    var saved=getSaved();
-    var pf=saved.find(function(p){return p.id===id;});
-    if(pf)inp.value=pf.name; // Sincronizza l'input con il valore salvato reale
-    inp.focus();
-    inp.select();
-  }
+  if(inp){inp.focus();inp.select();}
 }
 
 function cancelRename(id){
