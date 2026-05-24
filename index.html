@@ -27,13 +27,6 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);
   -webkit-font-smoothing:antialiased;touch-action:manipulation;
   overscroll-behavior:none;display:flex;flex-direction:column}
 
-/* ASSICURA L'EDITABILITÀ DEGLI INPUT SU MOBILE (TOUCH-ACTION E SELECTION) */
-input, select, textarea, .pf-rename-input, .pf-input, .sheet-input, .worker-input, .dp-carico-input {
-  -webkit-user-select: text !important;
-  user-select: text !important;
-  pointer-events: auto !important;
-}
-
 /* HEADER */
 .header{display:flex;align-items:center;justify-content:space-between;
   padding:16px 18px 12px;padding-top:calc(16px + env(safe-area-inset-top));flex-shrink:0}
@@ -43,7 +36,7 @@ input, select, textarea, .pf-rename-input, .pf-input, .sheet-input, .worker-inpu
 .header-sub{font-family:var(--mono);font-size:11px;color:var(--muted)}
 .header-btns{display:flex;align-items:center;gap:14px}
 
-/* PULSANTI HEADER */
+/* PULSANTI HEADER FIX: Hover solo su desktop, classe spinning */
 .btn-hdr{background:none;border:none;cursor:pointer;color:var(--muted);
   padding:4px;transition:color .15s;display:flex;align-items:center;
   -webkit-tap-highlight-color:transparent}
@@ -168,7 +161,7 @@ input, select, textarea, .pf-rename-input, .pf-input, .sheet-input, .worker-inpu
   padding:12px 14px;margin-bottom:8px;transition:border-color .15s}
 .pf-card.active-pf{border-color:var(--green)}
 .pf-card-top{display:flex;align-items:center;gap:10px}
-.pf-card-icon{font-size:24px;flex-shrink:0;cursor:pointer}
+.pf-card-icon{font-size:24px;flex-shrink:0}
 .pf-card-info{flex:1;min-width:0;cursor:pointer}
 .pf-card-name{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pf-card-meta{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:2px}
@@ -180,14 +173,15 @@ input, select, textarea, .pf-rename-input, .pf-input, .sheet-input, .worker-inpu
 .btn-pf-sm:active{background:rgba(255,255,255,0.08)}
 .btn-pf-sm.danger{color:var(--red);border-color:rgba(232,80,74,0.25)}
 
-/* RENAME INPUT inline */
+/* RENAME INPUT inline - FIX: migliorato per mobile */
 .pf-rename-row{display:flex;gap:6px;margin-top:8px}
 .pf-rename-input{flex:1;background:rgba(255,255,255,0.07);border:1px solid var(--accent);
-  border-radius:8px;padding:7px 10px;color:var(--text);font-size:13px;outline:none}
-.btn-rename-ok{background:var(--accent);border:none;border-radius:8px;padding:7px 12px;
+  border-radius:8px;padding:8px 10px;color:var(--text);font-size:13px;outline:none;font-family:var(--sans);-webkit-appearance:none}
+.pf-rename-input:focus{border-color:var(--accent2);background:rgba(255,255,255,0.12)}
+.btn-rename-ok{background:var(--accent);border:none;border-radius:8px;padding:8px 14px;
   color:#fff;font-size:12px;font-weight:600;cursor:pointer}
 .btn-rename-cancel{background:none;border:1px solid var(--border2);border-radius:8px;
-  padding:7px 10px;color:var(--muted);font-size:12px;cursor:pointer}
+  padding:8px 12px;color:var(--muted);font-size:12px;cursor:pointer}
 
 /* PIN */
 .pin-display{display:flex;gap:10px;justify-content:center;margin:16px 0}
@@ -206,7 +200,7 @@ input, select, textarea, .pf-rename-input, .pf-input, .sheet-input, .worker-inpu
 .worker-setup a{color:var(--accent2)}
 .worker-setup code{background:rgba(255,255,255,0.08);padding:1px 5px;border-radius:3px}
 .worker-row{display:flex;gap:8px}
-.worker-input{flex:1;background:rgba(255,255,256,0.06);border:1px solid rgba(232,80,74,0.4);
+.worker-input{flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(232,80,74,0.4);
   border-radius:10px;padding:9px 12px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;min-width:0}
 .worker-input:focus{border-color:var(--accent)}
 .worker-btn{background:var(--accent);border:none;border-radius:10px;padding:9px 14px;
@@ -429,7 +423,6 @@ input, select, textarea, .pf-rename-input, .pf-input, .sheet-input, .worker-inpu
   </div>
 </div>
 
-
 <!-- DETAIL PANEL -->
 <div class="detail-panel" id="detailPanel">
   <div class="dp-header">
@@ -492,10 +485,10 @@ input, select, textarea, .pf-rename-input, .pf-input, .sheet-input, .worker-inpu
 
 <script>
 /* ================================================================
-   BORSA LIVE v9.1
-   Fix: aggiornamento immediato senza refresh, rinomina inline,
-        sync portafoglio corrente prima di cambiare, UI touch
-================================================================ */
+   BORSA LIVE v10 - Fix rinomina portafoglio (focus mobile)
+   - Corretto: campo editabile, focus + tastiera mobile
+   - Eventi touch ottimizzati
+   ================================================================ */
 
 /* ---- PRESETS ---- */
 var PRESETS={
@@ -536,7 +529,6 @@ function savePfMeta(){
   try{localStorage.setItem('borsaPfId',currentPfId);localStorage.setItem('borsaPfName',currentPfName);localStorage.setItem('borsaPin',currentPin);}catch(e){}
 }
 
-/* Aggiorna i tickers del portafoglio corrente nella lista locale */
 function syncCurrentPf(){
   if(!currentPfId)return;
   var saved=getSaved();
@@ -544,7 +536,6 @@ function syncCurrentPf(){
   if(i!==-1){saved[i].tickers=tickers.slice();setSaved(saved);}
 }
 
-/* ---- TICKERS STATE ---- */
 var tickers=[];
 try{var _s=localStorage.getItem('borsaTickers');
   if(_s){var _p=JSON.parse(_s);
@@ -555,13 +546,11 @@ if(!tickers.length)tickers=['ENI.MI','UCG.MI','AAPL','BTC-USD'];
 var stockData={},editMode=false,currentTab='azioni-it';
 var countdownSec=60,countdownInterval=null;
 
-/* Salva tickers localmente E aggiorna lista portafogli */
 function saveLocal(){
   try{localStorage.setItem('borsaTickers',JSON.stringify(tickers));}catch(e){}
   syncCurrentPf();
 }
 
-/* ---- CLOUD ---- */
 async function saveCloud(){
   if(!workerUrl||!currentPfId||!currentPin)return false;
   try{
@@ -581,20 +570,13 @@ async function loadCloud(id,pin){
 async function autoSave(){
   if(!currentPfId||!currentPin) return;
   var ok = await saveCloud();
-  // Aggiorna solo l'indicatore nel footer, senza toast
   var fm = document.getElementById('footerMeta');
-  if(fm) {
-    fm.textContent = (ok ? '☁ ' : '⚠ ') + 
-      tickers.filter(function(t){return stockData[t]&&!stockData[t].error;}).length +
-      '/' + tickers.length;
-  }
+  if(fm) fm.textContent = (ok ? '☁ ' : '⚠ ') + tickers.filter(function(t){return stockData[t]&&!stockData[t].error;}).length + '/' + tickers.length;
 }
 
-/* ---- FORMAT ---- */
 function fmt(n,d){d=d==null?2:d;if(n==null||isNaN(n))return'—';return n.toLocaleString('it-IT',{minimumFractionDigits:d,maximumFractionDigits:d});}
 function fmtP(n){if(n==null||isNaN(n))return'—';if(n>=10000)return n.toLocaleString('it-IT',{minimumFractionDigits:0,maximumFractionDigits:0});if(n>=100)return n.toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2});return n.toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:4});}
 
-/* ---- FETCH QUOTE ---- */
 async function fetchStock(sym){
   if(!workerUrl)throw new Error('no_worker');
   var r=await fetch(workerUrl+'?s='+encodeURIComponent(sym),{signal:AbortSignal.timeout(10000)});
@@ -609,7 +591,6 @@ async function fetchStock(sym){
     exchange:m.exchangeName||'',marketState:m.marketState||''};
 }
 
-/* ---- FETCH SEARCH ---- */
 var searchTimer=null;
 function onSearchInput(val){
   val=val.trim();
@@ -625,9 +606,7 @@ async function doSearch(q){
     var r=await fetch(workerUrl+'?q='+encodeURIComponent(q),{signal:AbortSignal.timeout(8000)});
     var j=await r.json();
     if(document.getElementById('searchInput').value.trim()!==q)return;
-    var quotes=(j.quotes||[]).filter(function(x){
-      return x.symbol&&['EQUITY','ETF','CRYPTOCURRENCY','FUTURE','CURRENCY'].indexOf(x.quoteType)!==-1;
-    }).slice(0,8);
+    var quotes=(j.quotes||[]).filter(function(x){return x.symbol&&['EQUITY','ETF','CRYPTOCURRENCY','FUTURE','CURRENCY'].indexOf(x.quoteType)!==-1;}).slice(0,8);
     if(!quotes.length){document.getElementById('searchResults').innerHTML='<div class="search-hint">Nessun risultato</div>';return;}
     document.getElementById('searchResults').innerHTML=quotes.map(function(x){
       var sym=x.symbol||'',name=x.longname||x.shortname||sym;
@@ -650,7 +629,6 @@ function clearSearch(){
   document.getElementById('sheetDivider').style.display='block';
 }
 
-/* ---- ROWS ---- */
 function escId(s){return 'r-'+s.replace(/[^a-zA-Z0-9]/g,'_');}
 function skelRow(sym){
   return '<div class="skel-row" id="'+escId(sym)+'"><div class="skel-av"></div>'+
@@ -681,7 +659,6 @@ function stockRow(sym,d){
   '</div>';
 }
 
-/* ---- RENDER ---- */
 function renderList(){
   var list=document.getElementById('stockList');
   document.getElementById('portfolioTitle').textContent=currentPfName;
@@ -689,14 +666,11 @@ function renderList(){
     list.innerHTML='<div class="empty"><div class="big">📈</div><p>Nessun titolo.<br>Premi <b>+</b> per aggiungere.</p></div>';
     list.classList.remove('edit-mode');return;
   }
-  list.innerHTML=tickers.map(function(t){
-    return stockData[t]===undefined?skelRow(t):stockRow(t,stockData[t]);
-  }).join('');
+  list.innerHTML=tickers.map(function(t){return stockData[t]===undefined?skelRow(t):stockRow(t,stockData[t]);}).join('');
   if(editMode)list.classList.add('edit-mode');else list.classList.remove('edit-mode');
   updateMeta();renderChips();initDragDrop();
 }
 
-/* Aggiorna/inserisce UNA singola riga senza ridisegnare tutto */
 function updateRow(sym){
   var list=document.getElementById('stockList');
   var id=escId(sym);
@@ -704,13 +678,8 @@ function updateRow(sym){
   var html=stockData[sym]===undefined?skelRow(sym):stockRow(sym,stockData[sym]);
   var tmp=document.createElement('div');tmp.innerHTML=html;
   var newEl=tmp.firstElementChild;
-  if(existing){
-    existing.replaceWith(newEl);
-  } else {
-    var idx=tickers.indexOf(sym);
-    var ref=list.children[idx]||null;
-    if(ref)list.insertBefore(newEl,ref);else list.appendChild(newEl);
-  }
+  if(existing) existing.replaceWith(newEl);
+  else{ var idx=tickers.indexOf(sym); var ref=list.children[idx]||null; if(ref)list.insertBefore(newEl,ref); else list.appendChild(newEl);}
   if(editMode)list.classList.add('edit-mode');
   initDragDrop();
 }
@@ -721,32 +690,23 @@ function updateMeta(){
   document.getElementById('headerSub').textContent=new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
 }
 
-/* Carica UN titolo e aggiorna solo quella riga */
 async function fetchAndRender(sym){
-  updateRow(sym); // mostra skeleton subito
+  updateRow(sym);
   try{stockData[sym]=await fetchStock(sym);}catch(e){stockData[sym]={error:true};}
-  updateRow(sym); // aggiorna con dati reali
+  updateRow(sym);
   updateMeta();renderChips();
 }
 
-function setRefreshSpin(on) {
-  var rb = document.getElementById('refreshBtn');
-  if (rb) rb.classList.toggle('spinning', on);
-}
-
+function setRefreshSpin(on) { var rb = document.getElementById('refreshBtn'); if(rb) rb.classList.toggle('spinning', on);}
 async function refreshAll(){
   setRefreshSpin(true);
   try {
     if(!workerUrl){ renderList(); return; }
     tickers.forEach(function(t){ if(stockData[t]===undefined) updateRow(t); });
     await Promise.all(tickers.map(function(t){ return fetchAndRender(t); }));
-    updateMeta();
-    resetCountdown();
-  } finally {
-    setRefreshSpin(false);
-  }
+    updateMeta(); resetCountdown();
+  } finally { setRefreshSpin(false); }
 }
-
 function resetCountdown(){
   clearInterval(countdownInterval);countdownSec=60;
   countdownInterval=setInterval(function(){
@@ -756,8 +716,6 @@ function resetCountdown(){
     if(countdownSec<=0)refreshAll();
   },1000);
 }
-
-/* ---- EDIT / DRAG ---- */
 function toggleEdit(){
   editMode=!editMode;
   document.getElementById('editBtn').classList.toggle('editing',editMode);
@@ -785,8 +743,7 @@ function initDragDrop(){
   });
 }
 var tds=null,tc=null,toy=0;
-function onTouchStart(e){
-  e.preventDefault();var row=e.currentTarget.closest('.stock-row');tds=row;
+function onTouchStart(e){ e.preventDefault();var row=e.currentTarget.closest('.stock-row');tds=row;
   var rect=row.getBoundingClientRect();toy=e.touches[0].clientY-rect.top;
   tc=row.cloneNode(true);
   tc.style.cssText='position:fixed;left:'+rect.left+'px;top:'+rect.top+'px;width:'+rect.width+'px;opacity:.85;z-index:1000;pointer-events:none;background:var(--card2);border-radius:14px;';
@@ -794,8 +751,7 @@ function onTouchStart(e){
   document.addEventListener('touchmove',onTouchMove,{passive:false});
   document.addEventListener('touchend',onTouchEnd);
 }
-function onTouchMove(e){
-  e.preventDefault();if(!tc)return;
+function onTouchMove(e){ e.preventDefault();if(!tc)return;
   tc.style.top=(e.touches[0].clientY-toy)+'px';
   tc.style.display='none';var el=document.elementFromPoint(e.touches[0].clientX,e.touches[0].clientY);tc.style.display='';
   var tr=el?el.closest('.stock-row'):null;
@@ -814,15 +770,13 @@ function onTouchEnd(e){
   }
   tds=null;
 }
-
-/* ---- SHEETS ---- */
 function openAddSheet(){
   document.getElementById('overlay').classList.add('open');
   document.getElementById('addSheet').classList.add('open');
   setTimeout(function(){document.getElementById('searchInput').focus();},400);
 }
 function openPortfolioSheet(){
-  syncCurrentPf(); // aggiorna tickers prima di mostrare
+  syncCurrentPf();
   document.getElementById('overlay').classList.add('open');
   document.getElementById('portfolioSheet').classList.add('open');
   renderPfList();
@@ -833,48 +787,37 @@ function closeAllSheets(){
   document.getElementById('portfolioSheet').classList.remove('open');
   clearSearch();showPfList();
 }
-
-/* ---- PORTFOLIO RENDER ---- */
 function renderPfList(){
   var saved=getSaved();
   var list=document.getElementById('pfList');
-  if(!saved.length){
-    list.innerHTML='<div class="pf-hint">Nessun portafoglio salvato.<br>Crea il tuo primo portafoglio qui sotto.</div>';
-    return;
-  }
+  if(!saved.length){ list.innerHTML='<div class="pf-hint">Nessun portafoglio salvato.<br>Crea il tuo primo portafoglio qui sotto.</div>'; return; }
   list.innerHTML=saved.map(function(pf){
     var isActive=pf.id===currentPfId;
     var safeId=pf.id.replace(/'/g,"\\'");
-    return '<div class="pf-card'+(isActive?' active-pf':'')+'" id="pfc-'+pf.id+'" onclick="event.stopPropagation()">'+
+    return '<div class="pf-card'+(isActive?' active-pf':'')+'" id="pfc-'+pf.id+'">'+
       '<div class="pf-card-top">'+
-        '<div class="pf-card-icon" onclick="selectPf(\''+safeId+'\'); event.stopPropagation();">📊</div>'+
-        '<div class="pf-card-info" onclick="selectPf(\''+safeId+'\'); event.stopPropagation();">'+
+        '<div class="pf-card-icon" onclick="selectPf(\''+safeId+'\')">📊</div>'+
+        '<div class="pf-card-info" onclick="selectPf(\''+safeId+'\')">'+
           '<div class="pf-card-name">'+pf.name+'</div>'+
           '<div class="pf-card-meta">ID: <b style="font-family:var(--mono)">'+pf.id+'</b> · '+pf.tickers.length+' titoli</div>'+
         '</div>'+
         '<div class="pf-card-actions">'+
           (isActive?'<div class="pf-badge">attivo</div>':'')+
-          '<button class="btn-pf-sm" onclick="startRename(\''+safeId+'\'); event.stopPropagation();">✏️</button>'+
-          '<button class="btn-pf-sm danger" onclick="deletePf(\''+safeId+'\'); event.stopPropagation();">🗑</button>'+
+          '<button class="btn-pf-sm" onclick="startRename(\''+safeId+'\')">✏️</button>'+
+          '<button class="btn-pf-sm danger" onclick="deletePf(\''+safeId+'\')">🗑</button>'+
         '</div>'+
       '</div>'+
-      // Area rinomina (con stop propagation per evitare intercettazioni degli eventi touch sul mobile)
-      '<div class="pf-rename-row" id="rename-'+pf.id+'" style="display:none" onclick="event.stopPropagation()" ontouchstart="event.stopPropagation()">'+
-        '<input class="pf-rename-input" id="rename-input-'+pf.id+'" value="'+pf.name+'" maxlength="30" onkeydown="if(event.key===\'Enter\')confirmRename(\''+safeId+'\')" onclick="event.stopPropagation()" ontouchstart="event.stopPropagation()">'+
-        '<button class="btn-rename-ok" onclick="confirmRename(\''+safeId+'\'); event.stopPropagation();">✓</button>'+
-        '<button class="btn-rename-cancel" onclick="cancelRename(\''+safeId+'\'); event.stopPropagation();">✕</button>'+
+      '<div class="pf-rename-row" id="rename-'+pf.id+'" style="display:none">'+
+        '<input class="pf-rename-input" id="rename-input-'+pf.id+'" value="'+pf.name.replace(/"/g,'&quot;')+'" maxlength="30" onkeydown="if(event.key===\'Enter\'){ event.preventDefault(); confirmRename(\''+safeId+'\'); }">'+
+        '<button class="btn-rename-ok" onclick="confirmRename(\''+safeId+'\')">✓</button>'+
+        '<button class="btn-rename-cancel" onclick="cancelRename(\''+safeId+'\')">✕</button>'+
       '</div>'+
     '</div>';
   }).join('');
 }
-
 function selectPf(id){
-  // Salva portafoglio corrente prima di cambiare
-  syncCurrentPf();
-  if(currentPfId)autoSave();
-
-  var saved=getSaved();
-  var pf=saved.find(function(p){return p.id===id;});
+  syncCurrentPf(); if(currentPfId)autoSave();
+  var saved=getSaved(); var pf=saved.find(function(p){return p.id===id;});
   if(!pf)return;
   currentPfId=pf.id;currentPfName=pf.name;currentPin=pf.pin;
   tickers=pf.tickers.slice();
@@ -885,52 +828,44 @@ function selectPf(id){
   refreshAll();
   showToast('✓ "'+pf.name+'" caricato');
 }
-
+// CORREZIONE: funzione startRename (mobile focus)
 function startRename(id){
-  // Nascondi altri rename aperti
+  // chiudi eventuali altri rename attivi
   document.querySelectorAll('[id^="rename-"]').forEach(function(el){
-    if(el.id!=='rename-'+id)el.style.display='none';
+    if(el.id !== 'rename-'+id) el.style.display = 'none';
   });
-  var row=document.getElementById('rename-'+id);
-  if(!row)return;
-  row.style.display='flex';
-  
-  var inp=document.getElementById('rename-input-'+id);
+  var row = document.getElementById('rename-'+id);
+  if(!row) return;
+  row.style.display = 'flex';
+  var inp = document.getElementById('rename-input-'+id);
   if(inp){
-    // Utilizza un timeout per garantire che il browser mobile metta a fuoco l'input
-    setTimeout(function(){
-      inp.focus();
-      if (typeof inp.select === 'function') {
-        inp.select();
-      }
-      inp.setSelectionRange(0, inp.value.length);
-    }, 80);
+    inp.focus();
+    inp.select();
+    // piccolo ritardo per sicurezza su iOS
+    setTimeout(function(){ inp.focus(); inp.select(); }, 30);
   }
 }
-
 function cancelRename(id){
-  var row=document.getElementById('rename-'+id);
-  if(row)row.style.display='none';
+  var row = document.getElementById('rename-'+id);
+  if(row) row.style.display = 'none';
 }
-
 function confirmRename(id){
-  var inp=document.getElementById('rename-input-'+id);
-  if(!inp)return;
-  var newName=inp.value.trim();
-  if(!newName){showToast('⚠ Nome non valido');return;}
-  var saved=getSaved();
-  var i=saved.findIndex(function(p){return p.id===id;});
-  if(i===-1)return;
-  saved[i].name=newName;setSaved(saved);
-  if(id===currentPfId){
-    currentPfName=newName;savePfMeta();
-    document.getElementById('portfolioTitle').textContent=newName;
+  var inp = document.getElementById('rename-input-'+id);
+  if(!inp) return;
+  var newName = inp.value.trim();
+  if(!newName){ showToast('⚠ Nome non valido'); return; }
+  var saved = getSaved();
+  var i = saved.findIndex(function(p){ return p.id === id; });
+  if(i === -1) return;
+  saved[i].name = newName; setSaved(saved);
+  if(id === currentPfId){
+    currentPfName = newName; savePfMeta();
+    document.getElementById('portfolioTitle').textContent = newName;
     autoSave();
   }
   renderPfList();
   showToast('✓ Rinominato "'+newName+'"');
 }
-
 function deletePf(id){
   var saved=getSaved();
   var pf=saved.find(function(p){return p.id===id;});
@@ -944,36 +879,19 @@ function deletePf(id){
   }
   renderPfList();showToast('🗑 Portafoglio eliminato');
 }
-
-/* ---- PIN ---- */
 var pfAction='',pinBuf='';
-function showPfList(){
-  document.getElementById('pfListView').style.display='flex';
-  document.getElementById('pfPinView').style.display='none';
-  pinBuf='';pfAction='';
+function showPfList(){ document.getElementById('pfListView').style.display='flex'; document.getElementById('pfPinView').style.display='none'; pinBuf='';pfAction='';}
+function startCreate(){ var name=document.getElementById('newPfName').value.trim(); if(!name){showToast('⚠ Inserisci un nome');return;}
+  pfAction='create'; document.getElementById('pinPrompt').textContent='Scegli un PIN a 4 cifre — ti servirà per accedere da altri dispositivi';
+  pinBuf='';updateDots(); document.getElementById('pfListView').style.display='none'; document.getElementById('pfPinView').style.display='flex';
 }
-function startCreate(){
-  var name=document.getElementById('newPfName').value.trim();
-  if(!name){showToast('⚠ Inserisci un nome');return;}
-  pfAction='create';
-  document.getElementById('pinPrompt').textContent='Scegli un PIN a 4 cifre — ti servirà per accedere da altri dispositivi';
-  pinBuf='';updateDots();
-  document.getElementById('pfListView').style.display='none';
-  document.getElementById('pfPinView').style.display='flex';
-}
-function startLoad(){
-  var id=document.getElementById('loadPfId').value.trim().toUpperCase();
-  if(!id){showToast('⚠ Inserisci l\'ID portafoglio');return;}
-  pfAction='load:'+id;
-  document.getElementById('pinPrompt').textContent='Inserisci il PIN del portafoglio '+id;
-  pinBuf='';updateDots();
-  document.getElementById('pfListView').style.display='none';
-  document.getElementById('pfPinView').style.display='flex';
+function startLoad(){ var id=document.getElementById('loadPfId').value.trim().toUpperCase(); if(!id){showToast('⚠ Inserisci l\'ID portafoglio');return;}
+  pfAction='load:'+id; document.getElementById('pinPrompt').textContent='Inserisci il PIN del portafoglio '+id;
+  pinBuf='';updateDots(); document.getElementById('pfListView').style.display='none'; document.getElementById('pfPinView').style.display='flex';
 }
 function pinDigit(d){if(pinBuf.length>=4)return;pinBuf+=d;updateDots();if(pinBuf.length===4)setTimeout(confirmPin,200);}
 function pinBack(){pinBuf=pinBuf.slice(0,-1);updateDots();}
 function updateDots(){for(var i=0;i<4;i++){var d=document.getElementById('pd'+i);if(d)d.classList.toggle('filled',i<pinBuf.length);}}
-
 async function confirmPin(){
   var pin=pinBuf;
   if(pfAction==='create'){
@@ -989,13 +907,11 @@ async function confirmPin(){
     closeAllSheets();
     showToast(ok?'☁ Portafoglio "'+name+'" creato! ID: '+id:'✓ Creato (cloud non raggiunto)');
     updateMeta();
-
   } else if(pfAction.startsWith('load:')){
     var loadId=pfAction.split(':')[1];
     showToast('Caricamento…');
     var pf=await loadCloud(loadId,pin);
     if(!pf){showToast('⚠ ID o PIN errato');pinBuf='';updateDots();return;}
-    // Salva portafoglio corrente prima
     syncCurrentPf();if(currentPfId)await saveCloud();
     currentPfId=pf.id;currentPfName=pf.name;currentPin=pin;
     tickers=pf.tickers.slice();
@@ -1009,192 +925,30 @@ async function confirmPin(){
     showToast('✓ "'+pf.name+'" caricato!');
   }
 }
-
-/* ---- TABS / CHIPS ---- */
-function setTab(el,key){
-  currentTab=key;
-  document.querySelectorAll('.stab').forEach(function(t){t.classList.remove('active');});
-  el.classList.add('active');renderChips();
-}
-function renderChips(){
-  var items=PRESETS[currentTab]||[];
-  document.getElementById('sheetChips').innerHTML=items.map(function(p){
-    var added=tickers.indexOf(p.sym)!==-1;
-    var safe=p.sym.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-    return '<span class="chip'+(added?' added':'')+'" onclick="addPreset(\''+safe+'\')" title="'+p.sym+'">'+p.label+(added?' ✓':'')+'</span>';
-  }).join('');
-}
-
-/* ---- ADD / REMOVE ---- */
-function addTicker(sym){
-  if(tickers.indexOf(sym)!==-1){showToast('⚠ '+sym+' già in lista');return;}
-  tickers.push(sym);saveLocal();
-  closeAllSheets();
-  // Aggiorna immediatamente: aggiungi skeleton poi carica
-  var list=document.getElementById('stockList');
-  var tmp=document.createElement('div');tmp.innerHTML=skelRow(sym);
-  list.appendChild(tmp.firstElementChild);
-  fetchAndRender(sym).then(function(){autoSave();});
-  renderChips();
-}
+function setTab(el,key){ currentTab=key; document.querySelectorAll('.stab').forEach(function(t){t.classList.remove('active');}); el.classList.add('active');renderChips();}
+function renderChips(){ var items=PRESETS[currentTab]||[]; document.getElementById('sheetChips').innerHTML=items.map(function(p){ var added=tickers.indexOf(p.sym)!==-1; var safe=p.sym.replace(/\\/g,'\\\\').replace(/'/g,"\\'"); return '<span class="chip'+(added?' added':'')+'" onclick="addPreset(\''+safe+'\')" title="'+p.sym+'">'+p.label+(added?' ✓':'')+'</span>'; }).join('');}
+function addTicker(sym){ if(tickers.indexOf(sym)!==-1){showToast('⚠ '+sym+' già in lista');return;} tickers.push(sym);saveLocal(); closeAllSheets(); var list=document.getElementById('stockList'); var tmp=document.createElement('div');tmp.innerHTML=skelRow(sym); list.appendChild(tmp.firstElementChild); fetchAndRender(sym).then(function(){autoSave();}); renderChips();}
 function addFromSearch(sym){addTicker(sym);}
 function addPreset(sym){addTicker(sym);}
-
-function removeTicker(sym){
-  var short=sym.replace('.MI','').replace('-USD','').replace('=X','').replace('=F','');
-  tickers=tickers.filter(function(t){return t!==sym;});
-  delete stockData[sym];
-  saveLocal();
-  // Rimuovi la riga immediatamente senza ridisegnare tutto
-  var el=document.getElementById(escId(sym));if(el)el.remove();
-  updateMeta();renderChips();
-  autoSave();
-  showToast('🗑 '+short+' rimosso');
-}
-
-
-/* ---- DETAIL PANEL ---- */
-var detailSym = '';
-
+function removeTicker(sym){ tickers=tickers.filter(function(t){return t!==sym;}); delete stockData[sym]; saveLocal(); var el=document.getElementById(escId(sym));if(el)el.remove(); updateMeta();renderChips(); autoSave(); showToast('🗑 '+sym+' rimosso');}
 function getCaricos(){try{return JSON.parse(localStorage.getItem('borsaCaricos')||'{}');}catch(e){return {};}}
 function setCaricos(o){try{localStorage.setItem('borsaCaricos',JSON.stringify(o));}catch(e){}}
-
-function openDetail(sym){
-  detailSym=sym;
-  var d=stockData[sym];
-  if(!d||d.error)return;
-
-  // Header
-  document.getElementById('dpName').textContent=d.name;
-  document.getElementById('dpSym').textContent=sym;
-  var av=document.getElementById('dpAvatar');
-  av.textContent=aLetter(d.name,sym);av.style.background=aColor(sym);
-
-  // Prezzo
-  var ch=(d.price||0)-(d.prevClose||0);
-  var pct=d.prevClose?(ch/d.prevClose)*100:0;
-  var pos=ch>0,neg=ch<0,sign=pos?'+':'',cls=pos?'pos':neg?'neg':'flat';
-  document.getElementById('dpPrice').textContent=fmtP(d.price);
-  var chEl=document.getElementById('dpChange');
-  chEl.textContent=sign+fmt(ch)+' ('+sign+fmt(pct)+'%)';
-  chEl.className='dp-change '+cls;
-  document.getElementById('dpCurrency').textContent=(d.currency||'')+(d.exchange?' · '+d.exchange:'')+(d.marketState&&d.marketState!=='REGULAR'?' · '+d.marketState:'');
-  document.getElementById('dpAbs').textContent=sign+fmt(ch);
-  document.getElementById('dpAbs').className='dp-cell-value '+(pos?'pos':neg?'neg':'');
-  document.getElementById('dpPrev').textContent=fmt(d.prevClose);
-  document.getElementById('dpExch').textContent=d.exchange||'—';
-  document.getElementById('dpState').textContent=d.marketState==='REGULAR'?'Aperto':d.marketState==='PRE'?'Pre-mkt':d.marketState==='POST'?'After-hrs':'Chiuso';
-
-  // Carico
-  var caricos=getCaricos();
-  var c=caricos[sym]||{};
-  document.getElementById('dpCarico').value=c.price||'';
-  document.getElementById('dpQty').value=c.qty||'';
-  renderPnl(sym,d,c);
-
-  // Apri panel
-  document.getElementById('detailPanel').classList.add('open');
-}
-
-function renderPnl(sym,d,c){
-  var box=document.getElementById('dpPnlBox');
-  if(!c||c.price==null){box.style.display='none';return;}
-  box.style.display='block';
-  var carico=parseFloat(c.price);
-  if(isNaN(carico)||carico<=0){box.style.display='none';return;}
-  var delta=d.price-carico;
-  var deltaPct=(delta/carico)*100;
-  var pos=delta>=0,sign=pos?'+':'';
-  document.getElementById('dpCaricoPnl').textContent=fmt(carico);
-  document.getElementById('dpPricePnl').textContent=fmtP(d.price);
-  var dpEl=document.getElementById('dpDeltaPct');
-  dpEl.textContent=sign+fmt(delta)+' ('+sign+fmt(deltaPct)+'%)';
-  dpEl.className='dp-pnl-value '+(pos?'pos':'neg');
-
-  var qty=parseFloat(c.qty);
-  if(!isNaN(qty)&&qty>0){
-    document.getElementById('dpQtyRow').style.display='flex';
-    document.getElementById('dpQtyPnl').textContent=qty.toLocaleString('it-IT');
-    document.getElementById('dpPnlRow').style.display='flex';
-    var pnl=delta*qty;
-    var pnlEl=document.getElementById('dpPnlVal');
-    pnlEl.textContent=sign+fmt(pnl)+' '+( d.currency||'');
-    pnlEl.className='dp-pnl-value '+(pos?'pos':'neg');
-    document.getElementById('dpValRow').style.display='flex';
-    document.getElementById('dpValVal').textContent=fmt(d.price*qty)+' '+(d.currency||'');
-  }else{
-    document.getElementById('dpQtyRow').style.display='none';
-    document.getElementById('dpPnlRow').style.display='none';
-    document.getElementById('dpValRow').style.display='none';
-  }
-}
-
-function saveCarico(){
-  var price=parseFloat(document.getElementById('dpCarico').value);
-  var qty=parseFloat(document.getElementById('dpQty').value);
-  if(isNaN(price)||price<=0){showToast('⚠ Inserisci un prezzo valido');return;}
-  var caricos=getCaricos();
-  caricos[detailSym]={price:price,qty:isNaN(qty)||qty<=0?null:qty};
-  setCaricos(caricos);
-  // Aggiorna PnL
-  renderPnl(detailSym,stockData[detailSym],caricos[detailSym]);
-  showToast('✓ Prezzo di carico salvato');
-}
-
-function clearCarico(){
-  var caricos=getCaricos();
-  delete caricos[detailSym];
-  setCaricos(caricos);
-  document.getElementById('dpCarico').value='';
-  document.getElementById('dpQty').value='';
-  document.getElementById('dpPnlBox').style.display='none';
-  showToast('✓ Prezzo di carico rimosso');
-}
-
-function closeDetail(){
-  document.getElementById('detailPanel').classList.remove('open');
-  detailSym='';
-}
-
-function removeFromDetail(){
-  if(!detailSym)return;
-  removeTicker(detailSym);
-  closeDetail();
-}
-/* ---- TOAST ---- */
+function openDetail(sym){ detailSym=sym; var d=stockData[sym]; if(!d||d.error)return; document.getElementById('dpName').textContent=d.name; document.getElementById('dpSym').textContent=sym; var av=document.getElementById('dpAvatar'); av.textContent=aLetter(d.name,sym);av.style.background=aColor(sym); var ch=(d.price||0)-(d.prevClose||0); var pct=d.prevClose?(ch/d.prevClose)*100:0; var pos=ch>0,neg=ch<0,sign=pos?'+':'',cls=pos?'pos':neg?'neg':'flat'; document.getElementById('dpPrice').textContent=fmtP(d.price); var chEl=document.getElementById('dpChange'); chEl.textContent=sign+fmt(ch)+' ('+sign+fmt(pct)+'%)'; chEl.className='dp-change '+cls; document.getElementById('dpCurrency').textContent=(d.currency||'')+(d.exchange?' · '+d.exchange:'')+(d.marketState&&d.marketState!=='REGULAR'?' · '+d.marketState:''); document.getElementById('dpAbs').textContent=sign+fmt(ch); document.getElementById('dpAbs').className='dp-cell-value '+(pos?'pos':neg?'neg':''); document.getElementById('dpPrev').textContent=fmt(d.prevClose); document.getElementById('dpExch').textContent=d.exchange||'—'; document.getElementById('dpState').textContent=d.marketState==='REGULAR'?'Aperto':d.marketState==='PRE'?'Pre-mkt':d.marketState==='POST'?'After-hrs':'Chiuso'; var caricos=getCaricos(); var c=caricos[sym]||{}; document.getElementById('dpCarico').value=c.price||''; document.getElementById('dpQty').value=c.qty||''; renderPnl(sym,d,c); document.getElementById('detailPanel').classList.add('open');}
+function renderPnl(sym,d,c){ var box=document.getElementById('dpPnlBox'); if(!c||c.price==null){box.style.display='none';return;} box.style.display='block'; var carico=parseFloat(c.price); if(isNaN(carico)||carico<=0){box.style.display='none';return;} var delta=d.price-carico; var deltaPct=(delta/carico)*100; var pos=delta>=0,sign=pos?'+':''; document.getElementById('dpCaricoPnl').textContent=fmt(carico); document.getElementById('dpPricePnl').textContent=fmtP(d.price); var dpEl=document.getElementById('dpDeltaPct'); dpEl.textContent=sign+fmt(delta)+' ('+sign+fmt(deltaPct)+'%)'; dpEl.className='dp-pnl-value '+(pos?'pos':'neg'); var qty=parseFloat(c.qty); if(!isNaN(qty)&&qty>0){ document.getElementById('dpQtyRow').style.display='flex'; document.getElementById('dpQtyPnl').textContent=qty.toLocaleString('it-IT'); document.getElementById('dpPnlRow').style.display='flex'; var pnl=delta*qty; var pnlEl=document.getElementById('dpPnlVal'); pnlEl.textContent=sign+fmt(pnl)+' '+( d.currency||''); pnlEl.className='dp-pnl-value '+(pos?'pos':'neg'); document.getElementById('dpValRow').style.display='flex'; document.getElementById('dpValVal').textContent=fmt(d.price*qty)+' '+(d.currency||''); }else{ document.getElementById('dpQtyRow').style.display='none'; document.getElementById('dpPnlRow').style.display='none'; document.getElementById('dpValRow').style.display='none'; } }
+function saveCarico(){ var price=parseFloat(document.getElementById('dpCarico').value); var qty=parseFloat(document.getElementById('dpQty').value); if(isNaN(price)||price<=0){showToast('⚠ Inserisci un prezzo valido');return;} var caricos=getCaricos(); caricos[detailSym]={price:price,qty:isNaN(qty)||qty<=0?null:qty}; setCaricos(caricos); renderPnl(detailSym,stockData[detailSym],caricos[detailSym]); showToast('✓ Prezzo di carico salvato');}
+function clearCarico(){ var caricos=getCaricos(); delete caricos[detailSym]; setCaricos(caricos); document.getElementById('dpCarico').value=''; document.getElementById('dpQty').value=''; document.getElementById('dpPnlBox').style.display='none'; showToast('✓ Prezzo di carico rimosso');}
+function closeDetail(){ document.getElementById('detailPanel').classList.remove('open'); detailSym='';}
+function removeFromDetail(){ if(!detailSym)return; removeTicker(detailSym); closeDetail();}
 var _toastTimer = null;
-function showToast(msg, duration) {
-  duration = duration || 2500;
-  var t = document.getElementById('toast');
-  t.textContent = msg;
-  // Forza reflow per riavviare l'animazione anche se era già visibile
-  t.classList.remove('show');
-  void t.offsetHeight; // reflow
-  t.classList.add('show');
-  clearTimeout(_toastTimer);
-  _toastTimer = setTimeout(function() { t.classList.remove('show'); }, duration);
-}
-
-/* ---- INSTALL ---- */
+function showToast(msg, duration) { duration = duration || 2500; var t = document.getElementById('toast'); t.textContent = msg; t.classList.remove('show'); void t.offsetHeight; t.classList.add('show'); clearTimeout(_toastTimer); _toastTimer = setTimeout(function() { t.classList.remove('show'); }, duration); }
 var deferredPrompt=null;
 window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();deferredPrompt=e;});
 window.addEventListener('appinstalled',function(){deferredPrompt=null;showToast('✓ App installata!');});
-function handleInstall(){
-  document.getElementById('installModal').classList.add('open');
-  document.getElementById('installNowBtn').style.display=deferredPrompt?'block':'none';
-}
-function triggerInstall(){
-  if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(function(){deferredPrompt=null;closeInstallModal();});}
-  else{closeInstallModal();showToast('Menu ⋮ → Aggiungi a schermata Home');}
-}
+function handleInstall(){ document.getElementById('installModal').classList.add('open'); document.getElementById('installNowBtn').style.display=deferredPrompt?'block':'none';}
+function triggerInstall(){ if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(function(){deferredPrompt=null;closeInstallModal();});} else{closeInstallModal();showToast('Menu ⋮ → Aggiungi a schermata Home');} }
 function closeInstallModal(){document.getElementById('installModal').classList.remove('open');}
-
 if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});}
-
-/* ---- BOOT ---- */
-initWorkerUI();renderChips();renderList();
-if(workerUrl)refreshAll();
-if(currentPfId)updateMeta();
+initWorkerUI();renderChips();renderList(); if(workerUrl)refreshAll(); if(currentPfId)updateMeta();
 </script>
 </body>
 </html>
