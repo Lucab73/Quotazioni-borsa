@@ -4,11 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Borsa Live</title>
-<link rel=\"manifest\" href=\"manifest.json\">
+<link rel="manifest" href="manifest.json">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-web-app-capable" content="yes">
-<meta name="apple-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-web-app-title" content="Borsa Live">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Borsa Live">
 <meta name="theme-color" content="#0a0a0f">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -17,531 +17,1166 @@
 :root{
   --bg:#0f0f14;--card:#1a1a24;--card2:#20202e;
   --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.11);
-  --text:#ffffff;--muted:#7e7e8c;--accent:#7c6af7;
+  --text:#f0f0f8;--muted:#6a6a82;--accent:#7c6af7;--accent2:#a594ff;
   --green:#22c97a;--red:#e8504a;
+  --green-bg:rgba(34,201,122,0.12);--red-bg:rgba(232,80,74,0.12);
+  --mono:'DM Mono',monospace;--sans:'DM Sans',sans-serif;--row-h:60px
 }
-body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;user-select:none;-webkit-user-select:none;padding-bottom:100px;overflow-x:hidden}
+html,body{height:100%;overflow:hidden}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);
+  -webkit-font-smoothing:antialiased;touch-action:manipulation;
+  overscroll-behavior:none;display:flex;flex-direction:column}
 
-/* Header */
-.header{display:flex;justify-content:space-between;align-items:center;padding:20px 16px 10px 16px;position:sticky;top:0;background:var(--bg);z-index:90}
-.header h1{font-size:22px;font-weight:700;letter-spacing:-0.5px}
-.header-actions{display:flex;gap:12px;align-items:center}
-.btn-circle{width:40px;height:40px;border-radius:50%;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text);cursor:pointer;transition:transform 0.1s}
-.btn-circle:active{transform:scale(0.92)}
+/* HEADER */
+.header{display:flex;align-items:center;justify-content:space-between;
+  padding:16px 18px 12px;padding-top:calc(16px + env(safe-area-inset-top));flex-shrink:0}
+.header-left{display:flex;flex-direction:column;gap:2px}
+.portfolio-title{font-size:20px;font-weight:700;letter-spacing:-.4px;cursor:pointer}
+.portfolio-title:active{opacity:.7}
+.header-sub{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.header-btns{display:flex;align-items:center;gap:14px}
+.btn-hdr{background:none;border:none;cursor:pointer;color:var(--muted);
+  padding:4px;transition:color .15s;display:flex;align-items:center}
+.btn-hdr:hover,.btn-hdr:active{color:var(--text)}
+.btn-hdr.editing{color:var(--accent2)}
+.btn-hdr svg{width:20px;height:20px;transform-origin:center}
 
-/* Animazione Rotazione Icona */
-.spin {
-  display: inline-block !important;
-  animation: ruota 1s linear infinite;
-}
-@keyframes ruota {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
+/* STOCK LIST */
+.stock-list{flex:1;overflow-y:auto;overflow-x:hidden;padding:0 8px;
+  scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.stock-list::-webkit-scrollbar{display:none}
 
-/* Info Bar */
-.info-bar{padding:0 16px;margin-bottom:16px;display:flex;justify-content:between;font-size:12px;color:var(--muted);font-family:'DM Mono',monospace}
+/* FOOTER */
+.footer-bar{flex-shrink:0;display:flex;align-items:center;
+  justify-content:space-between;padding:8px 18px calc(10px + env(safe-area-inset-bottom));
+  border-top:1px solid var(--border)}
+.countdown{font-family:var(--mono);font-size:10px;color:var(--muted)}
+.footer-right{font-family:var(--mono);font-size:10px;color:var(--muted)}
 
-/* List & Cards */
-.list-container{padding:0 12px;display:flex;flex-direction:column;gap:10px}
-.stock-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px 16px;display:flex;justify-content:between;align-items:center;position:relative;touch-action:none;transition:box-shadow 0.2s,border-color 0.2s}
-.stock-card.dragging{opacity:0.5;box-shadow:0 10px 20px rgba(0,0,0,0.4);border-color:var(--accent);z-index:100}
-.stock-info{display:flex;flex-direction:column;gap:2px;max-width:55%}
-.stock-symbol{font-family:'DM Mono',monospace;font-weight:500;font-size:16px}
-.stock-name{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.stock-values{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
-.stock-price{font-family:'DM Mono',monospace;font-weight:500;font-size:16px}
-.stock-change{font-size:12px;font-weight:600;padding:2px 8px;border-radius:6px;font-family:'DM Mono',monospace}
-.stock-change.up{background:rgba(34,201,122,0.15);color:var(--green)}
-.stock-change.down{background:rgba(232,80,74,0.15);color:var(--red)}
+/* STOCK ROW */
+.stock-row{display:flex;align-items:center;gap:13px;padding:9px 10px;
+  border-radius:14px;min-height:var(--row-h);user-select:none;transition:background .12s}
+.stock-row:active{background:var(--card)}
+.stock-row.dragging{opacity:.35}
+.stock-row.drag-over{background:rgba(124,106,247,0.1)}
+.avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:16px;font-weight:700;flex-shrink:0;color:#fff}
+.row-info{flex:1;min-width:0}
+.row-name{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.25}
+.row-sym{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:1px}
+.row-price{text-align:right;flex-shrink:0}
+.row-value{font-family:var(--mono);font-size:15px;font-weight:500;letter-spacing:-.02em;line-height:1.25}
+.row-change{font-family:var(--mono);font-size:11px;margin-top:2px}
+.row-change.pos{color:var(--green)}.row-change.neg{color:var(--red)}.row-change.flat{color:var(--muted)}
+.drag-handle{display:none;color:var(--muted);font-size:18px;padding:4px;cursor:grab;flex-shrink:0;touch-action:none;align-items:center}
+.drag-handle:active{cursor:grabbing}
+.edit-mode .drag-handle{display:flex}
+.btn-del{display:none;background:var(--red-bg);border:1px solid rgba(232,80,74,0.25);
+  border-radius:8px;color:var(--red);font-size:11px;font-family:var(--mono);padding:5px 9px;cursor:pointer;flex-shrink:0}
+.edit-mode .btn-del{display:block}
 
-/* Toast Corrected */
-#toast {
-  position: fixed;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--card2);
-  color: #fff;
-  padding: 12px 24px;
-  border-radius: 12px;
-  font-size: 14px;
-  z-index: 9999;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.6);
-  border: 1px solid var(--border2);
-  pointer-events: none;
-  
-  /* Correzione Stato di Base */
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.3s ease, visibility 0.3s ease;
-}
-#toast.show {
-  opacity: 1;
-  visibility: visible;
-}
+/* SKELETON */
+.skel-row{display:flex;align-items:center;gap:13px;padding:9px 10px;min-height:var(--row-h)}
+.skel-av{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.07);flex-shrink:0;animation:sh 1.2s infinite}
+.skel-info{flex:1}.skel-pr{text-align:right;flex-shrink:0}
+.skel-ln{background:rgba(255,255,255,0.07);border-radius:4px;animation:sh 1.2s infinite}
+@keyframes sh{0%,100%{opacity:.35}50%{opacity:.75}}
+.empty{padding:50px 20px;text-align:center;color:var(--muted)}
+.empty .big{font-size:40px;margin-bottom:12px}
+.empty p{font-size:14px;line-height:1.6}
 
-/* Modals */
-.modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;align-items:flex-end;z-index:1000;opacity:0;pointer-events:none;transition:opacity 0.2s}
-.modal.open{opacity:1;pointer-events:auto}
-.modal-content{background:var(--bg);width:100%;border-radius:24px 24px 0 0;padding:24px 16px;max-height:85vh;overflow-y:auto;transform:translateY(100%);transition:transform 0.2s cubic-bezier(0.1, 1, 0.1, 1)}
-.modal.open .modal-content{transform:translateY(0)}
-.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
-.modal-header h2{font-size:18px;font-weight:700}
+/* OVERLAY + SHEET */
+.overlay{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,0.6);
+  opacity:0;pointer-events:none;transition:opacity .3s}
+.overlay.open{opacity:1;pointer-events:all}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:60;background:var(--card2);
+  border-radius:22px 22px 0 0;padding:0 0 calc(20px + env(safe-area-inset-bottom));
+  transform:translateY(100%);transition:transform .35s cubic-bezier(.32,.72,0,1);
+  max-height:92dvh;display:flex;flex-direction:column}
+.sheet.open{transform:translateY(0)}
+.sheet-handle{width:36px;height:4px;background:rgba(255,255,255,0.15);border-radius:2px;margin:12px auto 0;flex-shrink:0}
+.sheet-title{font-size:16px;font-weight:700;padding:14px 18px 10px;flex-shrink:0}
 
-/* Search UI */
-.search-input-wrapper{position:relative;margin-bottom:16px}
-.search-input{width:100%;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 16px;color:var(--text);font-size:15px;outline:none}
-.search-input:focus{border-color:var(--accent)}
-.search-results{display:flex;flex-direction:column;gap:8px}
-.search-item{background:var(--card);padding:12px 16px;border-radius:12px;display:flex;justify-content:between;align-items:center;cursor:pointer;border:1px solid transparent}
-.search-item:active{border-color:var(--accent)}
+/* ADD SHEET */
+.search-box{padding:0 18px 10px;flex-shrink:0;position:relative}
+.search-icon{position:absolute;left:30px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+.search-icon svg{width:16px;height:16px}
+.sheet-input{width:100%;background:rgba(255,255,255,0.07);border:1px solid var(--border2);
+  border-radius:14px;padding:11px 14px 11px 40px;color:var(--text);font-family:var(--sans);font-size:15px;outline:none}
+.sheet-input::placeholder{color:var(--muted)}
+.sheet-input:focus{border-color:var(--accent)}
+.search-results{flex-shrink:0;max-height:240px;overflow-y:auto;scrollbar-width:none;margin:0 10px}
+.search-results::-webkit-scrollbar{display:none}
+.result-row{display:flex;align-items:center;gap:12px;padding:10px;border-radius:12px;cursor:pointer;transition:background .12s}
+.result-row:active{background:rgba(124,106,247,0.1)}
+.result-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;color:#fff}
+.result-info{flex:1;min-width:0}
+.result-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.result-sym{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:1px}
+.result-add{background:var(--accent);border:none;border-radius:8px;padding:5px 12px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;flex-shrink:0}
+.result-add.added{background:var(--green-bg);color:var(--green);border:1px solid rgba(34,201,122,0.3)}
+.search-hint{padding:10px 18px;font-family:var(--mono);font-size:11px;color:var(--muted);text-align:center}
+.search-loading{padding:14px;text-align:center}
+.search-loading span{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--muted);animation:dot 1.2s infinite;margin:0 2px}
+.search-loading span:nth-child(2){animation-delay:.2s}.search-loading span:nth-child(3){animation-delay:.4s}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes dot{0%,80%,100%{opacity:.2}40%{opacity:1}}
+.sheet-divider{height:1px;background:var(--border);margin:4px 18px 10px;flex-shrink:0}
+.sheet-tabs{display:flex;overflow-x:auto;scrollbar-width:none;padding:0 18px 10px;gap:6px;flex-shrink:0}
+.sheet-tabs::-webkit-scrollbar{display:none}
+.stab{background:rgba(255,255,255,0.06);border:1px solid var(--border2);border-radius:20px;padding:5px 13px;
+  font-family:var(--mono);font-size:11px;color:var(--muted);cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .15s}
+.stab.active{background:rgba(124,106,247,0.18);border-color:var(--accent);color:var(--accent2)}
+.sheet-chips{display:flex;flex-wrap:wrap;gap:6px;padding:0 18px 8px;overflow-y:auto;flex:1;scrollbar-width:none;align-content:flex-start}
+.sheet-chips::-webkit-scrollbar{display:none}
+.chip{background:rgba(255,255,255,0.05);border:1px solid var(--border2);border-radius:20px;padding:5px 13px;
+  font-family:var(--mono);font-size:12px;color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap}
+.chip:active{border-color:var(--accent);color:var(--accent2)}
+.chip.added{border-color:rgba(34,201,122,0.4);color:var(--green)}
 
-/* Cloudflare Sync UI */
-.sync-row{display:flex;gap:8px;margin-bottom:16px}
-.sync-input{flex:1;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;color:var(--text);font-family:'DM Mono',monospace;outline:none}
-.btn-action{background:var(--accent);color:#fff;border:none;border-radius:12px;padding:12px 16px;font-weight:600;cursor:pointer}
-.btn-secondary{background:var(--card);color:var(--text);border:1px solid var(--border)}
-.portfolio-item{background:var(--card);padding:12px;border-radius:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+/* PORTFOLIO SHEET */
+.pf-scroll{flex:1;overflow-y:auto;scrollbar-width:none;padding:0 18px}
+.pf-scroll::-webkit-scrollbar{display:none}
+.pf-section-title{font-family:var(--mono);font-size:10px;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.1em;margin:14px 0 8px}
+.pf-input-row{display:flex;gap:8px;margin-bottom:8px}
+.pf-input{flex:1;background:rgba(255,255,255,0.07);border:1px solid var(--border2);border-radius:10px;
+  padding:10px 13px;color:var(--text);font-family:var(--sans);font-size:14px;outline:none;min-width:0}
+.pf-input:focus{border-color:var(--accent)}
+.pf-input::placeholder{color:var(--muted);font-size:13px}
+.btn-pf{background:var(--accent);border:none;border-radius:10px;padding:10px 16px;
+  color:#fff;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+.btn-pf.sec{background:rgba(255,255,255,0.08);color:var(--text)}
+.pf-sep{height:1px;background:var(--border);margin:14px 0}
+.pf-hint{font-family:var(--mono);font-size:11px;color:var(--muted);text-align:center;padding:20px 0}
+
+/* PORTFOLIO CARD */
+.pf-card{background:rgba(255,255,255,0.05);border:1px solid var(--border2);border-radius:14px;
+  padding:12px 14px;margin-bottom:8px;transition:border-color .15s}
+.pf-card.active-pf{border-color:var(--green)}
+.pf-card-top{display:flex;align-items:center;gap:10px}
+.pf-card-icon{font-size:24px;flex-shrink:0}
+.pf-card-info{flex:1;min-width:0;cursor:pointer}
+.pf-card-name{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pf-card-meta{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:2px}
+.pf-card-actions{display:flex;gap:6px;align-items:center;flex-shrink:0}
+.pf-badge{font-family:var(--mono);font-size:10px;background:var(--green-bg);
+  color:var(--green);border-radius:6px;padding:2px 8px}
+.btn-pf-sm{background:none;border:1px solid var(--border2);border-radius:8px;
+  padding:5px 10px;font-size:12px;cursor:pointer;color:var(--muted);transition:all .15s}
+.btn-pf-sm:active{background:rgba(255,255,255,0.08)}
+.btn-pf-sm.danger{color:var(--red);border-color:rgba(232,80,74,0.25)}
+
+/* RENAME INPUT inline */
+.pf-rename-row{display:flex;gap:6px;margin-top:8px}
+.pf-rename-input{flex:1;background:rgba(255,255,255,0.07);border:1px solid var(--accent);
+  border-radius:8px;padding:7px 10px;color:var(--text);font-size:13px;outline:none}
+.btn-rename-ok{background:var(--accent);border:none;border-radius:8px;padding:7px 12px;
+  color:#fff;font-size:12px;font-weight:600;cursor:pointer}
+.btn-rename-cancel{background:none;border:1px solid var(--border2);border-radius:8px;
+  padding:7px 10px;color:var(--muted);font-size:12px;cursor:pointer}
+
+/* PIN */
+.pin-display{display:flex;gap:10px;justify-content:center;margin:16px 0}
+.pin-dot{width:16px;height:16px;border-radius:50%;border:2px solid var(--border2);transition:all .2s}
+.pin-dot.filled{background:var(--accent);border-color:var(--accent)}
+.numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:0 20px}
+.num-btn{background:rgba(255,255,255,0.07);border:none;border-radius:14px;padding:16px;
+  font-size:20px;font-weight:500;color:var(--text);cursor:pointer;transition:all .15s;font-family:var(--mono)}
+.num-btn:active{background:rgba(255,255,255,0.2);transform:scale(.95)}
+.num-btn.del{font-size:16px}
+.num-btn.empty{background:none;cursor:default}
+
+/* WORKER SETUP */
+.worker-setup{padding:10px 18px 12px;flex-shrink:0}
+.worker-setup p{font-family:var(--mono);font-size:11px;color:var(--red);line-height:1.7;margin-bottom:8px}
+.worker-setup a{color:var(--accent2)}
+.worker-setup code{background:rgba(255,255,255,0.08);padding:1px 5px;border-radius:3px}
+.worker-row{display:flex;gap:8px}
+.worker-input{flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(232,80,74,0.4);
+  border-radius:10px;padding:9px 12px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;min-width:0}
+.worker-input:focus{border-color:var(--accent)}
+.worker-btn{background:var(--accent);border:none;border-radius:10px;padding:9px 14px;
+  color:#fff;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap}
+
+/* INSTALL MODAL */
+.inst-modal{position:fixed;inset:0;z-index:200;display:flex;align-items:flex-end;
+  background:rgba(0,0,0,0.6);opacity:0;pointer-events:none;transition:opacity .3s}
+.inst-modal.open{opacity:1;pointer-events:all}
+.inst-box{background:var(--card2);border-radius:22px 22px 0 0;
+  padding:20px 22px calc(28px + env(safe-area-inset-bottom));width:100%}
+.inst-box h3{font-size:17px;font-weight:700;margin-bottom:6px}
+.inst-box p{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:16px}
+.inst-steps{display:flex;flex-direction:column;gap:12px;margin-bottom:20px}
+.inst-step{display:flex;align-items:center;gap:12px}
+.step-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;
+  font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.step-text{font-size:13px;line-height:1.4}
+.step-text strong{color:var(--text)}.step-text span{color:var(--muted)}
+.inst-actions{display:flex;gap:10px}
+.btn-inst-p{flex:1;background:var(--accent);border:none;border-radius:12px;padding:13px;color:#fff;font-size:14px;font-weight:600;cursor:pointer}
+.btn-inst-s{background:rgba(255,255,255,0.07);border:1px solid var(--border2);border-radius:12px;padding:13px 18px;color:var(--muted);font-size:14px;cursor:pointer}
+
+/* DETAIL PANEL */
+.detail-panel{position:fixed;inset:0;z-index:80;display:flex;flex-direction:column;
+  background:var(--bg);transform:translateX(100%);transition:transform .32s cubic-bezier(.32,.72,0,1)}
+.detail-panel.open{transform:translateX(0)}
+.dp-header{display:flex;align-items:center;gap:12px;
+  padding:16px 18px 14px;padding-top:calc(16px + env(safe-area-inset-top));
+  border-bottom:1px solid var(--border);flex-shrink:0}
+.dp-back{background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;padding:4px;flex-shrink:0}
+.dp-back:active{color:var(--text)}
+.dp-title{flex:1}
+.dp-name{font-size:16px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dp-sym{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:1px}
+.dp-avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:18px;font-weight:700;color:#fff;flex-shrink:0}
+
+.dp-body{flex:1;overflow-y:auto;padding:18px;scrollbar-width:none}
+.dp-body::-webkit-scrollbar{display:none}
+
+/* Prezzo principale */
+.dp-price-block{text-align:center;padding:20px 0 24px}
+.dp-price{font-family:var(--mono);font-size:38px;font-weight:500;letter-spacing:-.03em;line-height:1}
+.dp-change{font-family:var(--mono);font-size:14px;margin-top:6px}
+.dp-change.pos{color:var(--green)}.dp-change.neg{color:var(--red)}.dp-change.flat{color:var(--muted)}
+.dp-currency{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:4px}
+
+/* Info griglia */
+.dp-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.dp-cell{background:var(--card);border-radius:12px;padding:12px 14px}
+.dp-cell-label{font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+.dp-cell-value{font-family:var(--mono);font-size:15px;font-weight:500}
+.dp-cell-value.pos{color:var(--green)}.dp-cell-value.neg{color:var(--red)}
+
+/* Sezione carico */
+.dp-section-title{font-family:var(--mono);font-size:10px;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px}
+.dp-carico-box{background:var(--card);border-radius:14px;padding:16px;margin-bottom:16px}
+.dp-carico-row{display:flex;gap:10px;margin-bottom:10px}
+.dp-carico-input{flex:1;background:rgba(255,255,255,0.07);border:1px solid var(--border2);
+  border-radius:10px;padding:10px 13px;color:var(--text);font-family:var(--mono);
+  font-size:15px;outline:none;min-width:0}
+.dp-carico-input:focus{border-color:var(--accent)}
+.dp-carico-input::placeholder{color:var(--muted);font-size:13px}
+.dp-carico-label{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:6px}
+.btn-dp{background:var(--accent);border:none;border-radius:10px;padding:10px 16px;
+  color:#fff;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+.btn-dp.sec{background:rgba(255,255,255,0.08);color:var(--muted)}
+
+/* PnL card */
+.dp-pnl{background:var(--card);border-radius:14px;padding:16px;margin-bottom:16px}
+.dp-pnl-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;
+  border-bottom:1px solid var(--border)}
+.dp-pnl-row:last-child{border-bottom:none}
+.dp-pnl-label{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.dp-pnl-value{font-family:var(--mono);font-size:13px;font-weight:500}
+.dp-pnl-value.pos{color:var(--green)}.dp-pnl-value.neg{color:var(--red)}
+.dp-observe-note{font-family:var(--mono);font-size:11px;color:var(--muted);
+  text-align:center;padding:10px;background:rgba(255,255,255,0.04);border-radius:10px}
+.btn-dp-remove{width:100%;background:var(--red-bg);border:1px solid rgba(232,80,74,0.25);
+  border-radius:12px;padding:12px;color:var(--red);font-family:var(--mono);
+  font-size:13px;cursor:pointer;margin-top:8px}
+
+/* TOAST FIX: Aggiunta opacità e transizione combinata */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(80px);
+  background:#222233;border:1px solid var(--border2);border-radius:10px;padding:9px 18px;
+  font-family:var(--mono);font-size:12px;color:var(--text);
+  opacity:0; transition:transform .3s, opacity .3s;
+  z-index:300;white-space:nowrap;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0); opacity:1}
 </style>
 </head>
 <body>
 
 <div class="header">
-  <h1>Borsa Live</h1>
-  <div class="header-actions">
-    <div class="btn-circle" onclick="openSyncModal()" title="Cloudflare Sync">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+  <div class="header-left">
+    <span class="portfolio-title" id="portfolioTitle" onclick="openPortfolioSheet()">My Portfolio</span>
+    <span class="header-sub" id="headerSub">—</span>
+  </div>
+  <div class="header-btns">
+    <button class="btn-hdr" id="refreshBtn" onclick="this.blur();refreshAll()" title="Aggiorna">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+    </button>
+    <button class="btn-hdr" id="editBtn" onclick="toggleEdit()" title="Modifica">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+    <button class="btn-hdr" id="installBtn" onclick="handleInstall()" title="Installa app">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    </button>
+    <button class="btn-hdr" onclick="openAddSheet()" title="Aggiungi titolo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+  </div>
+</div>
+
+<div class="stock-list" id="stockList"></div>
+
+<div class="footer-bar">
+  <span class="countdown" id="countdown"></span>
+  <span class="footer-right" id="footerMeta"></span>
+</div>
+
+<div class="overlay" id="overlay" onclick="closeAllSheets()"></div>
+
+<!-- ADD SHEET -->
+<div class="sheet" id="addSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-title">Aggiungi titolo</div>
+  <div class="worker-setup" id="workerSetup">
+    <p>⚠ Configura il proxy su <a href="https://workers.cloudflare.com" target="_blank">Cloudflare Workers</a> con <code>worker.js</code>:</p>
+    <div class="worker-row">
+      <input class="worker-input" id="workerUrlInput" type="url" placeholder="https://borsa-proxy.tuonome.workers.dev">
+      <button class="worker-btn" onclick="saveWorkerUrl()">✓ Salva</button>
     </div>
-    <div class="btn-circle" onclick="openSearchModal()" title="Aggiungi Titolo">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+  </div>
+  <div class="search-box">
+    <span class="search-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+    <input class="sheet-input" id="searchInput" type="text" placeholder="Cerca per nome o simbolo…"
+      autocomplete="off" autocorrect="off" oninput="onSearchInput(this.value)">
+  </div>
+  <div id="searchResults" style="display:none"></div>
+  <div class="sheet-divider" id="sheetDivider"></div>
+  <div class="sheet-tabs">
+    <div class="stab active" onclick="setTab(this,'azioni-it')">🇮🇹 IT</div>
+    <div class="stab" onclick="setTab(this,'azioni-us')">🇺🇸 US</div>
+    <div class="stab" onclick="setTab(this,'etf')">📦 ETF</div>
+    <div class="stab" onclick="setTab(this,'crypto')">₿ Crypto</div>
+    <div class="stab" onclick="setTab(this,'materie')">🥇 Materie</div>
+    <div class="stab" onclick="setTab(this,'forex')">💱 Forex</div>
+  </div>
+  <div class="sheet-chips" id="sheetChips"></div>
+</div>
+
+<!-- PORTFOLIO SHEET -->
+<div class="sheet" id="portfolioSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-title">I miei portafogli</div>
+
+  <!-- Lista view -->
+  <div id="pfListView" style="display:flex;flex-direction:column;flex:1;overflow:hidden">
+    <div class="pf-scroll" id="pfScroll">
+      <div id="pfList"></div>
+      <div class="pf-sep"></div>
+      <div class="pf-section-title">Nuovo portafoglio</div>
+      <div class="pf-input-row">
+        <input class="pf-input" id="newPfName" placeholder="Es. Azionario IT" maxlength="30">
+        <button class="btn-pf" onclick="startCreate()">Crea</button>
+      </div>
+      <div class="pf-section-title">Carica da un altro dispositivo</div>
+      <div class="pf-input-row">
+        <input class="pf-input" id="loadPfId" placeholder="ID portafoglio" maxlength="20" style="font-family:var(--mono);text-transform:uppercase">
+        <button class="btn-pf sec" onclick="startLoad()">Carica</button>
+      </div>
     </div>
-    <div class="btn-circle" onclick="refresh()" title="Aggiorna">
-      <svg id="refresh-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
-      </svg>
+  </div>
+
+  <!-- PIN view -->
+  <div id="pfPinView" style="display:none;flex-direction:column;flex:1">
+    <div style="padding:0 18px;text-align:center;flex-shrink:0">
+      <p style="font-size:14px;color:var(--muted);line-height:1.5" id="pinPrompt">Scegli un PIN a 4 cifre</p>
+    </div>
+    <div class="pin-display">
+      <div class="pin-dot" id="pd0"></div><div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div><div class="pin-dot" id="pd3"></div>
+    </div>
+    <div class="numpad">
+      <button class="num-btn" onclick="pinDigit('1')">1</button>
+      <button class="num-btn" onclick="pinDigit('2')">2</button>
+      <button class="num-btn" onclick="pinDigit('3')">3</button>
+      <button class="num-btn" onclick="pinDigit('4')">4</button>
+      <button class="num-btn" onclick="pinDigit('5')">5</button>
+      <button class="num-btn" onclick="pinDigit('6')">6</button>
+      <button class="num-btn" onclick="pinDigit('7')">7</button>
+      <button class="num-btn" onclick="pinDigit('8')">8</button>
+      <button class="num-btn" onclick="pinDigit('9')">9</button>
+      <button class="num-btn empty"></button>
+      <button class="num-btn" onclick="pinDigit('0')">0</button>
+      <button class="num-btn del" onclick="pinBack()">⌫</button>
+    </div>
+    <div style="display:flex;gap:10px;padding:16px 18px 0;flex-shrink:0">
+      <button class="btn-pf sec" style="flex:1" onclick="showPfList()">← Indietro</button>
     </div>
   </div>
 </div>
 
-<div class="info-bar">
-  <span id="update-timer">Aggiornamento in --s</span>
-  <span id="total-count">0 titoli</span>
-</div>
-
-<div class="list-container" id="stock-list"></div>
-
-<div id="toast"></div>
-
-<div id="searchModal" class="modal" onclick="if(event.target===this)closeSearchModal()">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h2>Aggiungi Titolo</h2>
-      <div class="btn-circle" onclick="closeSearchModal()">&times;</div>
+<!-- INSTALL MODAL -->
+<div class="inst-modal" id="installModal" onclick="closeInstallModal()">
+  <div class="inst-box" onclick="event.stopPropagation()">
+    <h3>📲 Installa Borsa Live</h3>
+    <p>Aggiungi l'app alla schermata Home per usarla come app nativa.</p>
+    <div class="inst-steps">
+      <div class="inst-step"><div class="step-num">1</div><div class="step-text"><strong>Tocca i tre puntini</strong> <span>⋮ in Chrome</span></div></div>
+      <div class="inst-step"><div class="step-num">2</div><div class="step-text"><strong>Aggiungi a schermata Home</strong> <span>o "Installa app"</span></div></div>
+      <div class="inst-step"><div class="step-num">3</div><div class="step-text"><strong>Conferma</strong> <span>e l'icona appare sulla Home 🎉</span></div></div>
     </div>
-    <div class="search-input-wrapper">
-      <input type="text" id="searchInput" class="search-input" placeholder="Cerca nome o simbolo (es: Ferrari, Apple)..." oninput="handleSearch(this.value)">
+    <div class="inst-actions">
+      <button class="btn-inst-p" id="installNowBtn" onclick="triggerInstall()">Installa ora</button>
+      <button class="btn-inst-s" onclick="closeInstallModal()">Chiudi</button>
     </div>
-    <div class="search-results" id="searchResults"></div>
   </div>
 </div>
 
-<div id="syncModal" class="modal" onclick="if(event.target===this)closeSyncModal()">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h2>Cloudflare Backup &amp; Sync</h2>
-      <div class="btn-circle" onclick="closeSyncModal()">&times;</div>
+
+<!-- DETAIL PANEL -->
+<div class="detail-panel" id="detailPanel">
+  <div class="dp-header">
+    <button class="dp-back" onclick="closeDetail()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <div class="dp-title">
+      <div class="dp-name" id="dpName">—</div>
+      <div class="dp-sym" id="dpSym">—</div>
     </div>
-    <div style="margin-bottom:16px; font-size:13px; color:var(--muted)">
-      Salva o sincronizza la tua lista sul cloud privato tramite Cloudflare Workers KV inserendo un PIN segreto.
+    <div class="dp-avatar" id="dpAvatar">—</div>
+  </div>
+  <div class="dp-body">
+    <div class="dp-price-block">
+      <div class="dp-price" id="dpPrice">—</div>
+      <div class="dp-change" id="dpChange">—</div>
+      <div class="dp-currency" id="dpCurrency">—</div>
     </div>
-    <div class="sync-row">
-      <input type="number" id="syncPin" class="sync-input" placeholder="Inserisci un PIN numerico (es: 1234)">
-      <button class="btn-action" onclick="saveToCloud()">Salva su Cloud</button>
+    <div class="dp-grid">
+      <div class="dp-cell"><div class="dp-cell-label">Var. assoluta</div><div class="dp-cell-value" id="dpAbs">—</div></div>
+      <div class="dp-cell"><div class="dp-cell-label">Chius. prec.</div><div class="dp-cell-value" id="dpPrev">—</div></div>
+      <div class="dp-cell"><div class="dp-cell-label">Mercato</div><div class="dp-cell-value" id="dpExch">—</div></div>
+      <div class="dp-cell"><div class="dp-cell-label">Stato</div><div class="dp-cell-value" id="dpState">—</div></div>
     </div>
-    <div class="sync-row">
-      <button class="btn-action btn-secondary" style="width:100%" onclick="loadPortfoliosFromCloud()">Cerca Backup su Cloud</button>
+
+    <!-- SEZIONE PREZZO CARICO -->
+    <div class="dp-section-title">💼 Posizione personale</div>
+    <div class="dp-carico-box">
+      <div style="display:flex;gap:10px;margin-bottom:10px">
+        <div style="flex:1">
+          <div class="dp-carico-label">Prezzo medio di carico</div>
+          <input class="dp-carico-input" id="dpCarico" type="number" step="0.001" min="0" placeholder="Es. 14,50">
+        </div>
+        <div style="flex:1">
+          <div class="dp-carico-label">Quantità (opz.)</div>
+          <input class="dp-carico-input" id="dpQty" type="number" step="1" min="0" placeholder="Es. 100">
+        </div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn-dp" onclick="saveCarico()" style="flex:1">✓ Salva</button>
+        <button class="btn-dp sec" onclick="clearCarico()">✕ Rimuovi</button>
+      </div>
     </div>
-    <div id="cloudPortfoliosList"></div>
+
+    <!-- PnL calcolato -->
+    <div class="dp-pnl" id="dpPnlBox" style="display:none">
+      <div class="dp-section-title" style="margin-bottom:12px">📊 Performance</div>
+      <div class="dp-pnl-row"><span class="dp-pnl-label">Prezzo carico</span><span class="dp-pnl-value" id="dpCaricoPnl">—</span></div>
+      <div class="dp-pnl-row"><span class="dp-pnl-label">Prezzo attuale</span><span class="dp-pnl-value" id="dpPricePnl">—</span></div>
+      <div class="dp-pnl-row"><span class="dp-pnl-label">Variaz. da carico</span><span class="dp-pnl-value" id="dpDeltaPct">—</span></div>
+      <div class="dp-pnl-row" id="dpQtyRow" style="display:none"><span class="dp-pnl-label">Quantità</span><span class="dp-pnl-value" id="dpQtyPnl">—</span></div>
+      <div class="dp-pnl-row" id="dpPnlRow" style="display:none"><span class="dp-pnl-label">P&amp;L totale</span><span class="dp-pnl-value" id="dpPnlVal">—</span></div>
+      <div class="dp-pnl-row" id="dpValRow" style="display:none"><span class="dp-pnl-label">Valore posizione</span><span class="dp-pnl-value" id="dpValVal">—</span></div>
+    </div>
+
+    <button class="btn-dp-remove" id="dpRemoveBtn" onclick="removeFromDetail()">🗑 Rimuovi dal portafoglio</button>
   </div>
 </div>
+<div class="toast" id="toast"></div>
 
 <script>
-/* ---- CONFIGURAZIONE WORKER ---- */
-// Inserisci qui l'URL del tuo Cloudflare Worker completo (es. https://tuo-worker.tuo-subdomain.workers.dev/)
-var workerUrl = ""; 
+/* ================================================================
+   BORSA LIVE v9
+   Fix: aggiornamento immediato senza refresh, rinomina inline,
+        sync portafoglio corrente prima di cambiare
+================================================================ */
 
-var tickers = localStorage.getItem('tickers') || 'RACE.MI,AAPL,BTC-USD';
-var countdownSec = 60;
-var timerInterval = null;
+/* ---- PRESETS ---- */
+var PRESETS={
+  'azioni-it':[{sym:'ENI.MI',label:'ENI'},{sym:'UCG.MI',label:'UniCredit'},{sym:'ISP.MI',label:'Intesa SP'},{sym:'RACE.MI',label:'Ferrari'},{sym:'STLAM.MI',label:'Stellantis'},{sym:'ENEL.MI',label:'Enel'},{sym:'G.MI',label:'Generali'},{sym:'MB.MI',label:'Mediobanca'},{sym:'LDO.MI',label:'Leonardo'},{sym:'BAMI.MI',label:'B.MontePaschi'},{sym:'TRN.MI',label:'Terna'},{sym:'SRG.MI',label:'Snam'},{sym:'AZM.MI',label:'Azimut'},{sym:'UNI.MI',label:'Unipol'}],
+  'azioni-us':[{sym:'AAPL',label:'Apple'},{sym:'MSFT',label:'Microsoft'},{sym:'NVDA',label:'Nvidia'},{sym:'TSLA',label:'Tesla'},{sym:'AMZN',label:'Amazon'},{sym:'GOOGL',label:'Alphabet'},{sym:'META',label:'Meta'},{sym:'JPM',label:'JPMorgan'},{sym:'BRK-B',label:'Berkshire'},{sym:'V',label:'Visa'}],
+  'etf':[{sym:'SWDA.MI',label:'iShares World'},{sym:'VWCE.MI',label:'Vanguard All-W'},{sym:'CSPX.MI',label:'iShares S&P500'},{sym:'XDWD.MI',label:'Xtrackers World'},{sym:'EIMI.MI',label:'iShares EM'},{sym:'PHAU.MI',label:'ETC Oro fisico'},{sym:'BCOIN.MI',label:'ETP Bitcoin'},{sym:'BTPI.MI',label:'ETF BTP Italia'}],
+  'crypto':[{sym:'BTC-USD',label:'Bitcoin'},{sym:'ETH-USD',label:'Ethereum'},{sym:'SOL-USD',label:'Solana'},{sym:'BNB-USD',label:'BNB'},{sym:'XRP-USD',label:'XRP'},{sym:'ADA-USD',label:'Cardano'}],
+  'materie':[{sym:'GC=F',label:'Oro'},{sym:'SI=F',label:'Argento'},{sym:'CL=F',label:'Petrolio WTI'},{sym:'BZ=F',label:'Brent'},{sym:'NG=F',label:'Gas'},{sym:'HG=F',label:'Rame'}],
+  'forex':[{sym:'EURUSD=X',label:'EUR/USD'},{sym:'GBPUSD=X',label:'GBP/USD'},{sym:'USDJPY=X',label:'USD/JPY'},{sym:'EURGBP=X',label:'EUR/GBP'},{sym:'USDCHF=X',label:'USD/CHF'},{sym:'EURJPY=X',label:'EUR/JPY'}]
+};
 
-function initWorkerUI() {
-  if(!workerUrl) {
-    showToast("⚠️ Configura l'URL del tuo Worker Cloudflare in index.html");
+var COLORS=['#4f7aff','#7c6af7','#e8504a','#22c97a','#f59e0b','#06b6d4','#ec4899','#8b5cf6','#10b981','#f97316'];
+function aColor(s){var h=0;for(var i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))&0xffff;return COLORS[h%COLORS.length];}
+function aLetter(n,s){var x=(n&&n.length>0)?n:s;return(x.replace(/[^a-zA-Z]/g,'')[0]||s[0]).toUpperCase();}
+
+/* ---- WORKER ---- */
+var workerUrl='';
+try{workerUrl=localStorage.getItem('borsaWorkerUrl')||'';}catch(e){}
+function saveWorkerUrl(){
+  var v=document.getElementById('workerUrlInput').value.trim().replace(/\/$/,'');
+  if(!v||!v.startsWith('http')){showToast('⚠ URL non valido');return;}
+  workerUrl=v;try{localStorage.setItem('borsaWorkerUrl',v);}catch(e){}
+  document.getElementById('workerSetup').style.display='none';
+  showToast('✓ Worker salvato!');closeAllSheets();refreshAll();
+}
+function initWorkerUI(){if(workerUrl)document.getElementById('workerSetup').style.display='none';}
+
+/* ---- PORTFOLIO STORAGE ---- */
+function getSaved(){try{return JSON.parse(localStorage.getItem('borsaSavedPf')||'[]');}catch(e){return[];}}
+function setSaved(a){try{localStorage.setItem('borsaSavedPf',JSON.stringify(a));}catch(e){}}
+
+var currentPfId='',currentPfName='My Portfolio',currentPin='';
+try{currentPfId=localStorage.getItem('borsaPfId')||'';}catch(e){}
+try{currentPfName=localStorage.getItem('borsaPfName')||'My Portfolio';}catch(e){}
+try{currentPin=localStorage.getItem('borsaPin')||'';}catch(e){}
+
+function savePfMeta(){
+  try{localStorage.setItem('borsaPfId',currentPfId);localStorage.setItem('borsaPfName',currentPfName);localStorage.setItem('borsaPin',currentPin);}catch(e){}
+}
+
+/* Aggiorna i tickers del portafoglio corrente nella lista locale */
+function syncCurrentPf(){
+  if(!currentPfId)return;
+  var saved=getSaved();
+  var i=saved.findIndex(function(p){return p.id===currentPfId;});
+  if(i!==-1){saved[i].tickers=tickers.slice();setSaved(saved);}
+}
+
+/* ---- TICKERS STATE ---- */
+var tickers=[];
+try{var _s=localStorage.getItem('borsaTickers');
+  if(_s){var _p=JSON.parse(_s);
+    if(Array.isArray(_p)&&_p.length&&_p.every(function(x){return typeof x==='string'&&x.length>0;}))
+      tickers=_p;}}catch(e){}
+if(!tickers.length)tickers=['ENI.MI','UCG.MI','AAPL','BTC-USD'];
+
+var stockData={},editMode=false,currentTab='azioni-it';
+var countdownSec=60,countdownInterval=null;
+
+/* Salva tickers localmente E aggiorna lista portafogli */
+function saveLocal(){
+  try{localStorage.setItem('borsaTickers',JSON.stringify(tickers));}catch(e){}
+  syncCurrentPf();
+}
+
+/* ---- CLOUD ---- */
+async function saveCloud(){
+  if(!workerUrl||!currentPfId||!currentPin)return false;
+  try{
+    var r=await fetch(workerUrl+'?action=save',{method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({id:currentPfId,name:currentPfName,pin:currentPin,tickers:tickers})});
+    var j=await r.json();return j.ok===true;
+  }catch(e){return false;}
+}
+async function loadCloud(id,pin){
+  if(!workerUrl)return null;
+  try{
+    var r=await fetch(workerUrl+'?action=load&id='+encodeURIComponent(id)+'&pin='+encodeURIComponent(pin));
+    var j=await r.json();return j.ok?j.portfolio:null;
+  }catch(e){return null;}
+}
+async function autoSave(){
+  if(!currentPfId||!currentPin) return;
+  var ok = await saveCloud();
+  // Aggiorna solo l'indicatore nel footer, senza toast
+  var fm = document.getElementById('footerMeta');
+  if(fm) {
+    fm.textContent = (ok ? '☁ ' : '⚠ ') + 
+      tickers.filter(function(t){return stockData[t]&&!stockData[t].error;}).length +
+      '/' + tickers.length;
   }
 }
 
-/* ---- LOGICA CORE & AGGIORNAMENTO ---- */
-function refresh() {
-  if(!workerUrl) return;
-  
-  // Correzione: Recupera l'icona e aggiunge la classe spin
-  var icon = document.getElementById('refresh-icon');
-  if (icon) icon.classList.add('spin');
-  
-  if(!tickers) {
-    document.getElementById('stock-list').innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">Nessun titolo monitorato.<br>Usa il tasto + in alto per cercarne uno.</div>';
-    document.getElementById('total-count').textContent = '0 titoli';
-    if (icon) icon.classList.remove('spin');
-    return;
-  }
-  
-  fetch(workerUrl + '?s=' + tickers)
-    .then(function(res){ return res.json(); })
-    .then(function(data){
-      if(data.error) {
-        showToast('Errore dal server: ' + data.error);
-        return;
-      }
-      buildList(data);
-      resetCountdown();
-    })
-    .catch(function(){
-      showToast('⚠️ Errore di connessione di rete');
-    })
-    .finally(function(){
-      // Correzione: Rimuove SEMPRE l'animazione alla fine del ciclo fetch
-      if (icon) icon.classList.remove('spin');
-    });
+/* ---- FORMAT ---- */
+function fmt(n,d){d=d==null?2:d;if(n==null||isNaN(n))return'—';return n.toLocaleString('it-IT',{minimumFractionDigits:d,maximumFractionDigits:d});}
+function fmtP(n){if(n==null||isNaN(n))return'—';if(n>=10000)return n.toLocaleString('it-IT',{minimumFractionDigits:0,maximumFractionDigits:0});if(n>=100)return n.toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2});return n.toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:4});}
+
+/* ---- FETCH QUOTE ---- */
+async function fetchStock(sym){
+  if(!workerUrl)throw new Error('no_worker');
+  var r=await fetch(workerUrl+'?s='+encodeURIComponent(sym),{signal:AbortSignal.timeout(10000)});
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  var j=await r.json();
+  if(!j.chart||j.chart.error)throw new Error('yf_error');
+  var res=j.chart.result&&j.chart.result[0];
+  if(!res||!res.meta||res.meta.regularMarketPrice==null)throw new Error('no_price');
+  var m=res.meta;
+  return{symbol:m.symbol||sym,name:m.longName||m.shortName||sym,price:m.regularMarketPrice,
+    prevClose:m.chartPreviousClose||m.previousClose,currency:m.currency||'',
+    exchange:m.exchangeName||'',marketState:m.marketState||''};
 }
 
-function buildList(data) {
-  var container = document.getElementById('stock-list');
-  container.innerHTML = '';
-  
-  // Assicura array anche per singolo record
-  var list = Array.isArray(data) ? data : [data];
-  
-  list.forEach(function(item){
-    if(!item || !item.symbol) return;
-    
-    var card = document.createElement('div');
-    card.className = 'stock-card';
-    card.dataset.id = item.symbol;
-    
-    var changeClass = item.changePercent >= 0 ? 'up' : 'down';
-    var sign = item.changePercent >= 0 ? '+' : '';
-    
-    card.innerHTML = 
-      '<div class="stock-info" onclick="confirmDelete(\''+item.symbol+'\')">' +
-        '<div class="stock-symbol">'+item.symbol+'</div>' +
-        '<div class="stock-name">'+(item.name || '')+'</div>' +
-      '</div>' +
-      '<div class="stock-values">' +
-        '<div class="stock-price">'+item.price.toFixed(item.price < 2 ? 4 : 2)+' '+item.currency+'</div>' +
-        '<div class="stock-change '+changeClass+'">'+sign+item.changePercent.toFixed(2)+'%</div>' +
+/* ---- FETCH SEARCH ---- */
+var searchTimer=null;
+function onSearchInput(val){
+  val=val.trim();
+  var res=document.getElementById('searchResults'),div=document.getElementById('sheetDivider');
+  if(!val){clearSearch();return;}
+  res.style.display='block';div.style.display='none';
+  res.innerHTML='<div class="search-loading"><span></span><span></span><span></span></div>';
+  clearTimeout(searchTimer);searchTimer=setTimeout(function(){doSearch(val);},380);
+}
+async function doSearch(q){
+  if(!workerUrl){document.getElementById('searchResults').innerHTML='<div class="search-hint">⚠ Configura prima il Worker</div>';return;}
+  try{
+    var r=await fetch(workerUrl+'?q='+encodeURIComponent(q),{signal:AbortSignal.timeout(8000)});
+    var j=await r.json();
+    if(document.getElementById('searchInput').value.trim()!==q)return;
+    var quotes=(j.quotes||[]).filter(function(x){
+      return x.symbol&&['EQUITY','ETF','CRYPTOCURRENCY','FUTURE','CURRENCY'].indexOf(x.quoteType)!==-1;
+    }).slice(0,8);
+    if(!quotes.length){document.getElementById('searchResults').innerHTML='<div class="search-hint">Nessun risultato</div>';return;}
+    document.getElementById('searchResults').innerHTML=quotes.map(function(x){
+      var sym=x.symbol||'',name=x.longname||x.shortname||sym;
+      var added=tickers.indexOf(sym)!==-1;
+      var safe=sym.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+      var sn=name.length>26?name.substring(0,24)+'…':name;
+      return '<div class="result-row" onclick="addFromSearch(\''+safe+'\')">' +
+        '<div class="result-avatar" style="background:'+aColor(sym)+'">'+aLetter(name,sym)+'</div>'+
+        '<div class="result-info"><div class="result-name">'+sn+'</div>'+
+        '<div class="result-sym">'+sym+'<span style="margin-left:6px;opacity:.5;font-size:10px">'+(x.exchange||'')+'</span></div></div>'+
+        '<button class="result-add'+(added?' added':'')+'" onclick="event.stopPropagation();addFromSearch(\''+safe+'\')">'+(added?'✓':'+')+'</button>'+
       '</div>';
-      
-    container.appendChild(card);
-  });
-  
-  document.getElementById('total-count').textContent = list.length + (list.length === 1 ? ' titolo' : ' titoli');
-  initDragAndDrop();
+    }).join('');
+  }catch(e){document.getElementById('searchResults').innerHTML='<div class="search-hint">Errore, riprova</div>';}
+}
+function clearSearch(){
+  clearTimeout(searchTimer);
+  document.getElementById('searchInput').value='';
+  document.getElementById('searchResults').style.display='none';
+  document.getElementById('sheetDivider').style.display='block';
 }
 
-function confirmDelete(symbol) {
-  if(confirm('Rimuovere ' + symbol + ' dalla lista?')) {
-    var arr = tickers.split(',').filter(function(t){ return t !== symbol; });
-    tickers = arr.join(',');
-    localStorage.setItem('tickers', tickers);
-    refresh();
-    showToast('Rimosso ' + symbol);
+/* ---- ROWS ---- */
+function escId(s){return 'r-'+s.replace(/[^a-zA-Z0-9]/g,'_');}
+function skelRow(sym){
+  return '<div class="skel-row" id="'+escId(sym)+'"><div class="skel-av"></div>'+
+    '<div class="skel-info"><div class="skel-ln" style="width:110px;height:13px;margin-bottom:5px"></div>'+
+    '<div class="skel-ln" style="width:65px;height:10px"></div></div>'+
+    '<div class="skel-pr"><div class="skel-ln" style="width:72px;height:13px;margin-bottom:5px;margin-left:auto"></div>'+
+    '<div class="skel-ln" style="width:95px;height:10px;margin-left:auto"></div></div></div>';
+}
+function stockRow(sym,d){
+  var id=escId(sym),safe=sym.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+  var short=sym.replace('.MI','').replace('-USD','').replace('=X','').replace('=F','');
+  if(!d||d.error)return '<div class="stock-row" id="'+id+'" data-sym="'+sym+'">'+(editMode?'<div class="drag-handle">⠿</div>':'')+
+    '<div class="avatar" style="background:'+aColor(sym)+'">'+short[0].toUpperCase()+'</div>'+
+    '<div class="row-info"><div class="row-name">'+short+'</div><div class="row-sym" style="color:var(--red)">⚠ non trovato</div></div>'+
+    '<div class="row-price"></div>'+(editMode?'<button class="btn-del" onclick="removeTicker(\''+safe+'\')">✕</button>':'')+
+  '</div>';
+  var ch=(d.price||0)-(d.prevClose||0),pct=d.prevClose?(ch/d.prevClose)*100:0;
+  var pos=ch>0,neg=ch<0,sign=pos?'+':'',cls=pos?'pos':neg?'neg':'flat';
+  var safeOpen=sym.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+  var sn=d.name.length>24?d.name.substring(0,22)+'…':d.name;
+  var clickable=editMode?'':'onclick="openDetail(\''+safeOpen+'\')"';
+  return '<div class="stock-row" id="'+id+'" data-sym="'+sym+'" '+clickable+'>'+(editMode?'<div class="drag-handle">⠿</div>':'')+
+    '<div class="avatar" style="background:'+aColor(sym)+'">'+aLetter(d.name,sym)+'</div>'+
+    '<div class="row-info"><div class="row-name">'+sn+'</div><div class="row-sym">'+sym+'</div></div>'+
+    '<div class="row-price"><div class="row-value">'+fmtP(d.price)+'</div>'+
+    '<div class="row-change '+cls+'">'+sign+fmt(ch)+' ('+sign+fmt(pct)+'%)</div></div>'+
+    (editMode?'<button class="btn-del" onclick="removeTicker(\''+safe+'\')">✕</button>':'')+
+  '</div>';
+}
+
+/* ---- RENDER ---- */
+function renderList(){
+  var list=document.getElementById('stockList');
+  document.getElementById('portfolioTitle').textContent=currentPfName;
+  if(!tickers.length){
+    list.innerHTML='<div class="empty"><div class="big">📈</div><p>Nessun titolo.<br>Premi <b>+</b> per aggiungere.</p></div>';
+    list.classList.remove('edit-mode');return;
+  }
+  list.innerHTML=tickers.map(function(t){
+    return stockData[t]===undefined?skelRow(t):stockRow(t,stockData[t]);
+  }).join('');
+  if(editMode)list.classList.add('edit-mode');else list.classList.remove('edit-mode');
+  updateMeta();renderChips();initDragDrop();
+}
+
+/* Aggiorna/inserisce UNA singola riga senza ridisegnare tutto */
+function updateRow(sym){
+  var list=document.getElementById('stockList');
+  var id=escId(sym);
+  var existing=document.getElementById(id);
+  var html=stockData[sym]===undefined?skelRow(sym):stockRow(sym,stockData[sym]);
+  var tmp=document.createElement('div');tmp.innerHTML=html;
+  var newEl=tmp.firstElementChild;
+  if(existing){
+    existing.replaceWith(newEl);
+  } else {
+    var idx=tickers.indexOf(sym);
+    var ref=list.children[idx]||null;
+    if(ref)list.insertBefore(newEl,ref);else list.appendChild(newEl);
+  }
+  if(editMode)list.classList.add('edit-mode');
+  initDragDrop();
+}
+
+function updateMeta(){
+  var ok=tickers.filter(function(t){return stockData[t]&&!stockData[t].error;}).length;
+  document.getElementById('footerMeta').textContent=(currentPfId?'☁ ':'')+ok+'/'+tickers.length;
+  document.getElementById('headerSub').textContent=new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
+}
+
+/* Carica UN titolo e aggiorna solo quella riga */
+async function fetchAndRender(sym){
+  updateRow(sym); // mostra skeleton subito
+  try{stockData[sym]=await fetchStock(sym);}catch(e){stockData[sym]={error:true};}
+  updateRow(sym); // aggiorna con dati reali
+  updateMeta();renderChips();
+}
+
+function setRefreshSpin(on) {
+  var rb = document.getElementById('refreshBtn');
+  if (!rb) return;
+  var svg = rb.querySelector('svg');
+  if (svg) svg.style.animation = on ? 'spin .7s linear infinite' : '';
+  rb.style.color = on ? 'var(--accent2)' : '';
+}
+
+async function refreshAll(){
+  setRefreshSpin(true);
+  try {
+    if(!workerUrl){ renderList(); return; }
+    tickers.forEach(function(t){ if(stockData[t]===undefined) updateRow(t); });
+    await Promise.all(tickers.map(function(t){ return fetchAndRender(t); }));
+    updateMeta();
+    resetCountdown();
+  } finally {
+    setRefreshSpin(false);
   }
 }
 
-/* ---- TIMER COUNTDOWN ---- */
-function resetCountdown() {
-  clearInterval(timerInterval);
-  countdownSec = 60;
-  var el = document.getElementById('update-timer');
-  el.textContent = 'Aggiornamento in ' + countdownSec + 's';
-  
-  timerInterval = setInterval(function(){
+function resetCountdown(){
+  clearInterval(countdownInterval);countdownSec=60;
+  countdownInterval=setInterval(function(){
     countdownSec--;
-    if(countdownSec <= 0) {
-      refresh();
-    } else {
-      el.textContent = 'Aggiornamento in ' + countdownSec + 's';
-    }
-  }, 1000);
+    var el=document.getElementById('countdown');
+    if(el)el.textContent=countdownSec>0?'Agg. tra '+countdownSec+'s':'';
+    if(countdownSec<=0)refreshAll();
+  },1000);
 }
 
-/* ---- SEARCH ENGINE (YAHOO PROXY VIA WORKER) ---- */
-var searchTimeout = null;
-function handleSearch(val) {
-  clearTimeout(searchTimeout);
-  if(!val.trim()) {
-    document.getElementById('searchResults').innerHTML = '';
-    return;
-  }
-  if(!workerUrl) return;
-  
-  searchTimeout = setTimeout(function(){
-    fetch(workerUrl + '?q=' + encodeURIComponent(val))
-      .then(function(res){ return res.json(); })
-      .then(function(data){
-        var resultsDiv = document.getElementById('searchResults');
-        resultsDiv.innerHTML = '';
-        
-        var quotes = data.quotes || [];
-        if(quotes.length === 0) {
-          resultsDiv.innerHTML = '<div style="text-align:center;padding:12px;color:var(--muted)">Nessun asset trovato</div>';
-          return;
-        }
-        
-        quotes.forEach(function(q){
-          var item = document.createElement('div');
-          item.className = 'search-item';
-          item.innerHTML = 
-            '<div>' +
-              '<div style="font-family:\'DM Mono\',monospace; font-weight:500">'+q.symbol+'</div>' +
-              '<div style="font-size:12px; color:var(--muted)">'+(q.shortname || q.longname || '')+'</div>' +
-            '</div>' +
-            '<div style="font-size:11px; padding:3px 6px; background:var(--border2); border-radius:4px; color:var(--muted)">'+(q.quoteType || '')+'</div>';
-            
-          item.onclick = function() {
-            addTicker(q.symbol);
-          };
-          resultsDiv.appendChild(item);
-        });
-      }).catch(function(){});
-  }, 300);
+/* ---- EDIT / DRAG ---- */
+function toggleEdit(){
+  editMode=!editMode;
+  document.getElementById('editBtn').classList.toggle('editing',editMode);
+  renderList();
 }
-
-function addTicker(symbol) {
-  var arr = tickers ? tickers.split(',') : [];
-  if(arr.indexOf(symbol) !== -1) {
-    showToast('Titolo già presente in lista');
-    return;
-  }
-  arr.push(symbol);
-  tickers = arr.join(',');
-  localStorage.setItem('tickers', tickers);
-  closeSearchModal();
-  refresh();
-  showToast('✓ Aggiunto ' + symbol);
-}
-
-/* ---- CLOUDFLARE KV BACKUP & SYNC LOGIC ---- */
-function saveToCloud() {
-  var pin = document.getElementById('syncPin').value.trim();
-  if(!pin || pin.length < 4) {
-    showToast('Inserisci un PIN di almeno 4 cifre');
-    return;
-  }
-  if(!workerUrl) return;
-
-  var name = prompt("Assegna un nome a questo salvataggio (es. Telefono, Desktop, Lista Primaria):", "Mio Portafoglio");
-  if(!name) return;
-
-  var payload = {
-    id: 'p_' + Date.now(),
-    name: name,
-    pin: pin,
-    tickers: tickers
-  };
-
-  fetch(workerUrl + '?action=save', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  })
-  .then(function(r){ return r.json(); })
-  .then(function(res){
-    if(res.ok) {
-      showToast('✓ Salvato su Cloudflare KV con successo!');
-    } else {
-      showToast('Errore durante il salvataggio');
-    }
-  })
-  .catch(function(){ showToast('Errore di rete durante il backup'); });
-}
-
-function loadPortfoliosFromCloud() {
-  var pin = document.getElementById('syncPin').value.trim();
-  if(!pin) {
-    showToast('Inserisci il PIN per cercare i tuoi salvataggi');
-    return;
-  }
-  if(!workerUrl) return;
-
-  fetch(workerUrl + '?action=list&pin=' + pin)
-  .then(function(r){ return r.json(); })
-  .then(function(res){
-    var div = document.getElementById('cloudPortfoliosList');
-    div.innerHTML = '';
-    if(!res.ok || !res.portfolios || res.portfolios.length === 0) {
-      div.innerHTML = '<div style="font-size:12px; color:var(--red); padding:8px 0">Nessun backup trovato per questo PIN</div>';
-      return;
-    }
-
-    res.portfolios.forEach(function(p){
-      var date = new Date(p.updatedAt).toLocaleString('it-IT', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
-      var item = document.createElement('div');
-      item.className = 'portfolio-item';
-      item.innerHTML = 
-        '<div>' +
-          '<div style="font-weight:600; font-size:13px">'+p.name+'</div>' +
-          '<div style="font-size:11px; color:var(--muted)">'+date+' • '+p.tickers.split(',').length+' titoli</div>' +
-        '</div>' +
-        '<button class="btn-action" style="padding:6px 12px; font-size:12px">Sincronizza</button>';
-      
-      item.querySelector('button').onclick = function() {
-        if(confirm('Sovrascrivere la lista locale corrente con il backup "' + p.name + '"?')) {
-          tickers = p.tickers;
-          localStorage.setItem('tickers', tickers);
-          refresh();
-          closeSyncModal();
-          showToast('✓ Sincronizzazione completata!');
-        }
-      };
-      div.appendChild(item);
+var dragSrc=null;
+function initDragDrop(){
+  if(!editMode)return;
+  document.querySelectorAll('.stock-row').forEach(function(row){
+    var h=row.querySelector('.drag-handle');if(!h)return;
+    h.addEventListener('touchstart',onTouchStart,{passive:false});
+    h.addEventListener('mousedown',function(){row.setAttribute('draggable','true');});
+    row.addEventListener('dragstart',function(e){dragSrc=row;row.classList.add('dragging');e.dataTransfer.effectAllowed='move';});
+    row.addEventListener('dragend',function(){row.classList.remove('dragging');row.setAttribute('draggable','false');document.querySelectorAll('.stock-row').forEach(function(r){r.classList.remove('drag-over');});});
+    row.addEventListener('dragover',function(e){e.preventDefault();if(row!==dragSrc)row.classList.add('drag-over');});
+    row.addEventListener('dragleave',function(){row.classList.remove('drag-over');});
+    row.addEventListener('drop',function(e){
+      e.preventDefault();row.classList.remove('drag-over');
+      if(!dragSrc||dragSrc===row)return;
+      var si=tickers.indexOf(dragSrc.dataset.sym),di=tickers.indexOf(row.dataset.sym);
+      if(si===-1||di===-1)return;
+      tickers.splice(si,1);tickers.splice(di,0,dragSrc.dataset.sym);
+      saveLocal();renderList();autoSave();
     });
-  })
-  .catch(function(){ showToast('Impossibile connettersi al cloud'); });
+  });
+}
+var tds=null,tc=null,toy=0;
+function onTouchStart(e){
+  e.preventDefault();var row=e.currentTarget.closest('.stock-row');tds=row;
+  var rect=row.getBoundingClientRect();toy=e.touches[0].clientY-rect.top;
+  tc=row.cloneNode(true);
+  tc.style.cssText='position:fixed;left:'+rect.left+'px;top:'+rect.top+'px;width:'+rect.width+'px;opacity:.85;z-index:1000;pointer-events:none;background:var(--card2);border-radius:14px;';
+  document.body.appendChild(tc);row.style.opacity='.3';
+  document.addEventListener('touchmove',onTouchMove,{passive:false});
+  document.addEventListener('touchend',onTouchEnd);
+}
+function onTouchMove(e){
+  e.preventDefault();if(!tc)return;
+  tc.style.top=(e.touches[0].clientY-toy)+'px';
+  tc.style.display='none';var el=document.elementFromPoint(e.touches[0].clientX,e.touches[0].clientY);tc.style.display='';
+  var tr=el?el.closest('.stock-row'):null;
+  document.querySelectorAll('.stock-row').forEach(function(r){r.classList.remove('drag-over');});
+  if(tr&&tr!==tds)tr.classList.add('drag-over');
+}
+function onTouchEnd(e){
+  document.removeEventListener('touchmove',onTouchMove);document.removeEventListener('touchend',onTouchEnd);
+  if(tc){tc.remove();tc=null;}if(tds)tds.style.opacity='';
+  var touch=e.changedTouches[0],el=document.elementFromPoint(touch.clientX,touch.clientY);
+  var tr=el?el.closest('.stock-row'):null;
+  document.querySelectorAll('.stock-row').forEach(function(r){r.classList.remove('drag-over');});
+  if(tr&&tr!==tds&&tds){
+    var si=tickers.indexOf(tds.dataset.sym),di=tickers.indexOf(tr.dataset.sym);
+    if(si!==-1&&di!==-1){tickers.splice(si,1);tickers.splice(di,0,tds.dataset.sym);saveLocal();renderList();autoSave();}
+  }
+  tds=null;
 }
 
-/* ---- GESTIONE MODALI UI ---- */
-function openSearchModal() {
-  document.getElementById('searchModal').classList.add('open');
-  document.getElementById('searchInput').focus();
+/* ---- SHEETS ---- */
+function openAddSheet(){
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('addSheet').classList.add('open');
+  setTimeout(function(){document.getElementById('searchInput').focus();},400);
 }
-function closeSearchModal() {
-  document.getElementById('searchModal').classList.remove('open');
-  document.getElementById('searchInput').value = '';
-  document.getElementById('searchResults').innerHTML = '';
+function openPortfolioSheet(){
+  syncCurrentPf(); // aggiorna tickers prima di mostrare
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('portfolioSheet').classList.add('open');
+  renderPfList();
 }
-function openSyncModal() { document.getElementById('syncModal').classList.add('open'); }
-function closeSyncModal() {
-  document.getElementById('syncModal').classList.remove('open');
-  document.getElementById('cloudPortfoliosList').innerHTML = '';
+function closeAllSheets(){
+  document.getElementById('overlay').classList.remove('open');
+  document.getElementById('addSheet').classList.remove('open');
+  document.getElementById('portfolioSheet').classList.remove('open');
+  clearSearch();showPfList();
 }
 
-/* ---- TOAST ENGINE CORRECTED ---- */
+/* ---- PORTFOLIO RENDER ---- */
+function renderPfList(){
+  var saved=getSaved();
+  var list=document.getElementById('pfList');
+  if(!saved.length){
+    list.innerHTML='<div class="pf-hint">Nessun portafoglio salvato.<br>Crea il tuo primo portafoglio qui sotto.</div>';
+    return;
+  }
+  list.innerHTML=saved.map(function(pf){
+    var isActive=pf.id===currentPfId;
+    var safeId=pf.id.replace(/'/g,"\\'");
+    return '<div class="pf-card'+(isActive?' active-pf':'')+'" id="pfc-'+pf.id+'">'+
+      '<div class="pf-card-top">'+
+        '<div class="pf-card-icon" onclick="selectPf(\''+safeId+'\')">📊</div>'+
+        '<div class="pf-card-info" onclick="selectPf(\''+safeId+'\')">'+
+          '<div class="pf-card-name">'+pf.name+'</div>'+
+          '<div class="pf-card-meta">ID: <b style="font-family:var(--mono)">'+pf.id+'</b> · '+pf.tickers.length+' titoli</div>'+
+        '</div>'+
+        '<div class="pf-card-actions">'+
+          (isActive?'<div class="pf-badge">attivo</div>':'')+
+          '<button class="btn-pf-sm" onclick="startRename(\''+safeId+'\')">✏️</button>'+
+          '<button class="btn-pf-sm danger" onclick="deletePf(\''+safeId+'\')">🗑</button>'+
+        '</div>'+
+      '</div>'+
+      // Area rinomina (nascosta di default)
+      '<div class="pf-rename-row" id="rename-'+pf.id+'" style="display:none">'+
+        '<input class="pf-rename-input" id="rename-input-'+pf.id+'" value="'+pf.name+'" maxlength="30" onkeydown="if(event.key===\'Enter\')confirmRename(\''+safeId+'\')">'+
+        '<button class="btn-rename-ok" onclick="confirmRename(\''+safeId+'\')">✓</button>'+
+        '<button class="btn-rename-cancel" onclick="cancelRename(\''+safeId+'\')">✕</button>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function selectPf(id){
+  // Salva portafoglio corrente prima di cambiare
+  syncCurrentPf();
+  if(currentPfId)autoSave();
+
+  var saved=getSaved();
+  var pf=saved.find(function(p){return p.id===id;});
+  if(!pf)return;
+  currentPfId=pf.id;currentPfName=pf.name;currentPin=pf.pin;
+  tickers=pf.tickers.slice();
+  savePfMeta();saveLocal();
+  stockData={};
+  closeAllSheets();
+  renderList();
+  refreshAll();
+  showToast('✓ "'+pf.name+'" caricato');
+}
+
+function startRename(id){
+  // Nascondi altri rename aperti
+  document.querySelectorAll('[id^="rename-"]').forEach(function(el){
+    if(el.id!=='rename-'+id)el.style.display='none';
+  });
+  var row=document.getElementById('rename-'+id);
+  if(!row)return;
+  row.style.display='flex';
+  var inp=document.getElementById('rename-input-'+id);
+  if(inp){inp.focus();inp.select();}
+}
+
+function cancelRename(id){
+  var row=document.getElementById('rename-'+id);
+  if(row)row.style.display='none';
+}
+
+function confirmRename(id){
+  var inp=document.getElementById('rename-input-'+id);
+  if(!inp)return;
+  var newName=inp.value.trim();
+  if(!newName){showToast('⚠ Nome non valido');return;}
+  var saved=getSaved();
+  var i=saved.findIndex(function(p){return p.id===id;});
+  if(i===-1)return;
+  saved[i].name=newName;setSaved(saved);
+  if(id===currentPfId){
+    currentPfName=newName;savePfMeta();
+    document.getElementById('portfolioTitle').textContent=newName;
+    autoSave();
+  }
+  renderPfList();
+  showToast('✓ Rinominato "'+newName+'"');
+}
+
+function deletePf(id){
+  var saved=getSaved();
+  var pf=saved.find(function(p){return p.id===id;});
+  if(!pf)return;
+  // Usa confirm solo su desktop; su mobile mostra comunque
+  var ok=window.confirm?window.confirm('Eliminare "'+pf.name+'"?\nViene rimosso dal dispositivo.'):true;
+  if(!ok)return;
+  saved=saved.filter(function(p){return p.id!==id;});setSaved(saved);
+  if(id===currentPfId){
+    currentPfId='';currentPfName='My Portfolio';currentPin='';savePfMeta();
+    document.getElementById('portfolioTitle').textContent='My Portfolio';
+  }
+  renderPfList();showToast('🗑 Portafoglio eliminato');
+}
+
+/* ---- PIN ---- */
+var pfAction='',pinBuf='';
+function showPfList(){
+  document.getElementById('pfListView').style.display='flex';
+  document.getElementById('pfPinView').style.display='none';
+  pinBuf='';pfAction='';
+}
+function startCreate(){
+  var name=document.getElementById('newPfName').value.trim();
+  if(!name){showToast('⚠ Inserisci un nome');return;}
+  pfAction='create';
+  document.getElementById('pinPrompt').textContent='Scegli un PIN a 4 cifre — ti servirà per accedere da altri dispositivi';
+  pinBuf='';updateDots();
+  document.getElementById('pfListView').style.display='none';
+  document.getElementById('pfPinView').style.display='flex';
+}
+function startLoad(){
+  var id=document.getElementById('loadPfId').value.trim().toUpperCase();
+  if(!id){showToast('⚠ Inserisci l\'ID portafoglio');return;}
+  pfAction='load:'+id;
+  document.getElementById('pinPrompt').textContent='Inserisci il PIN del portafoglio '+id;
+  pinBuf='';updateDots();
+  document.getElementById('pfListView').style.display='none';
+  document.getElementById('pfPinView').style.display='flex';
+}
+function pinDigit(d){if(pinBuf.length>=4)return;pinBuf+=d;updateDots();if(pinBuf.length===4)setTimeout(confirmPin,200);}
+function pinBack(){pinBuf=pinBuf.slice(0,-1);updateDots();}
+function updateDots(){for(var i=0;i<4;i++){var d=document.getElementById('pd'+i);if(d)d.classList.toggle('filled',i<pinBuf.length);}}
+
+async function confirmPin(){
+  var pin=pinBuf;
+  if(pfAction==='create'){
+    var name=document.getElementById('newPfName').value.trim();
+    var id=Math.random().toString(36).substr(2,8).toUpperCase();
+    currentPfId=id;currentPfName=name;currentPin=pin;
+    savePfMeta();
+    var saved=getSaved();
+    saved.push({id:id,name:name,pin:pin,tickers:[]});
+    tickers=[];
+    setSaved(saved);saveLocal();
+    var ok=await saveCloud();
+    closeAllSheets();
+    showToast(ok?'☁ Portafoglio "'+name+'" creato! ID: '+id:'✓ Creato (cloud non raggiunto)');
+    updateMeta();
+
+  } else if(pfAction.startsWith('load:')){
+    var loadId=pfAction.split(':')[1];
+    showToast('Caricamento…');
+    var pf=await loadCloud(loadId,pin);
+    if(!pf){showToast('⚠ ID o PIN errato');pinBuf='';updateDots();return;}
+    // Salva portafoglio corrente prima
+    syncCurrentPf();if(currentPfId)await saveCloud();
+    currentPfId=pf.id;currentPfName=pf.name;currentPin=pin;
+    tickers=pf.tickers.slice();
+    savePfMeta();saveLocal();
+    var saved=getSaved();
+    var ei=saved.findIndex(function(p){return p.id===pf.id;});
+    if(ei===-1)saved.push({id:pf.id,name:pf.name,pin:pin,tickers:pf.tickers.slice()});
+    else saved[ei]={id:pf.id,name:pf.name,pin:pin,tickers:pf.tickers.slice()};
+    setSaved(saved);
+    stockData={};closeAllSheets();renderList();refreshAll();
+    showToast('✓ "'+pf.name+'" caricato!');
+  }
+}
+
+/* ---- TABS / CHIPS ---- */
+function setTab(el,key){
+  currentTab=key;
+  document.querySelectorAll('.stab').forEach(function(t){t.classList.remove('active');});
+  el.classList.add('active');renderChips();
+}
+function renderChips(){
+  var items=PRESETS[currentTab]||[];
+  document.getElementById('sheetChips').innerHTML=items.map(function(p){
+    var added=tickers.indexOf(p.sym)!==-1;
+    var safe=p.sym.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    return '<span class="chip'+(added?' added':'')+'" onclick="addPreset(\''+safe+'\')" title="'+p.sym+'">'+p.label+(added?' ✓':'')+'</span>';
+  }).join('');
+}
+
+/* ---- ADD / REMOVE ---- */
+function addTicker(sym){
+  if(tickers.indexOf(sym)!==-1){showToast('⚠ '+sym+' già in lista');return;}
+  tickers.push(sym);saveLocal();
+  closeAllSheets();
+  // Aggiorna immediatamente: aggiungi skeleton poi carica
+  var list=document.getElementById('stockList');
+  var tmp=document.createElement('div');tmp.innerHTML=skelRow(sym);
+  list.appendChild(tmp.firstElementChild);
+  fetchAndRender(sym).then(function(){autoSave();});
+  renderChips();
+}
+function addFromSearch(sym){addTicker(sym);}
+function addPreset(sym){addTicker(sym);}
+
+function removeTicker(sym){
+  var short=sym.replace('.MI','').replace('-USD','').replace('=X','').replace('=F','');
+  tickers=tickers.filter(function(t){return t!==sym;});
+  delete stockData[sym];
+  saveLocal();
+  // Rimuovi la riga immediatamente senza ridisegnare tutto
+  var el=document.getElementById(escId(sym));if(el)el.remove();
+  updateMeta();renderChips();
+  autoSave();
+  showToast('🗑 '+short+' rimosso');
+}
+
+
+/* ---- DETAIL PANEL ---- */
+var detailSym = '';
+
+function getCaricos(){try{return JSON.parse(localStorage.getItem('borsaCaricos')||'{}');}catch(e){return {};}}
+function setCaricos(o){try{localStorage.setItem('borsaCaricos',JSON.stringify(o));}catch(e){}}
+
+function openDetail(sym){
+  detailSym=sym;
+  var d=stockData[sym];
+  if(!d||d.error)return;
+
+  // Header
+  document.getElementById('dpName').textContent=d.name;
+  document.getElementById('dpSym').textContent=sym;
+  var av=document.getElementById('dpAvatar');
+  av.textContent=aLetter(d.name,sym);av.style.background=aColor(sym);
+
+  // Prezzo
+  var ch=(d.price||0)-(d.prevClose||0);
+  var pct=d.prevClose?(ch/d.prevClose)*100:0;
+  var pos=ch>0,neg=ch<0,sign=pos?'+':'',cls=pos?'pos':neg?'neg':'flat';
+  document.getElementById('dpPrice').textContent=fmtP(d.price);
+  var chEl=document.getElementById('dpChange');
+  chEl.textContent=sign+fmt(ch)+' ('+sign+fmt(pct)+'%)';
+  chEl.className='dp-change '+cls;
+  document.getElementById('dpCurrency').textContent=(d.currency||'')+(d.exchange?' · '+d.exchange:'')+(d.marketState&&d.marketState!=='REGULAR'?' · '+d.marketState:'');
+  document.getElementById('dpAbs').textContent=sign+fmt(ch);
+  document.getElementById('dpAbs').className='dp-cell-value '+(pos?'pos':neg?'neg':'');
+  document.getElementById('dpPrev').textContent=fmt(d.prevClose);
+  document.getElementById('dpExch').textContent=d.exchange||'—';
+  document.getElementById('dpState').textContent=d.marketState==='REGULAR'?'Aperto':d.marketState==='PRE'?'Pre-mkt':d.marketState==='POST'?'After-hrs':'Chiuso';
+
+  // Carico
+  var caricos=getCaricos();
+  var c=caricos[sym]||{};
+  document.getElementById('dpCarico').value=c.price||'';
+  document.getElementById('dpQty').value=c.qty||'';
+  renderPnl(sym,d,c);
+
+  // Apri panel
+  document.getElementById('detailPanel').classList.add('open');
+}
+
+function renderPnl(sym,d,c){
+  var box=document.getElementById('dpPnlBox');
+  if(!c||c.price==null){box.style.display='none';return;}
+  box.style.display='block';
+  var carico=parseFloat(c.price);
+  if(isNaN(carico)||carico<=0){box.style.display='none';return;}
+  var delta=d.price-carico;
+  var deltaPct=(delta/carico)*100;
+  var pos=delta>=0,sign=pos?'+':'';
+  document.getElementById('dpCaricoPnl').textContent=fmt(carico);
+  document.getElementById('dpPricePnl').textContent=fmtP(d.price);
+  var dpEl=document.getElementById('dpDeltaPct');
+  dpEl.textContent=sign+fmt(delta)+' ('+sign+fmt(deltaPct)+'%)';
+  dpEl.className='dp-pnl-value '+(pos?'pos':'neg');
+
+  var qty=parseFloat(c.qty);
+  if(!isNaN(qty)&&qty>0){
+    document.getElementById('dpQtyRow').style.display='flex';
+    document.getElementById('dpQtyPnl').textContent=qty.toLocaleString('it-IT');
+    document.getElementById('dpPnlRow').style.display='flex';
+    var pnl=delta*qty;
+    var pnlEl=document.getElementById('dpPnlVal');
+    pnlEl.textContent=sign+fmt(pnl)+' '+( d.currency||'');
+    pnlEl.className='dp-pnl-value '+(pos?'pos':'neg');
+    document.getElementById('dpValRow').style.display='flex';
+    document.getElementById('dpValVal').textContent=fmt(d.price*qty)+' '+(d.currency||'');
+  }else{
+    document.getElementById('dpQtyRow').style.display='none';
+    document.getElementById('dpPnlRow').style.display='none';
+    document.getElementById('dpValRow').style.display='none';
+  }
+}
+
+function saveCarico(){
+  var price=parseFloat(document.getElementById('dpCarico').value);
+  var qty=parseFloat(document.getElementById('dpQty').value);
+  if(isNaN(price)||price<=0){showToast('⚠ Inserisci un prezzo valido');return;}
+  var caricos=getCaricos();
+  caricos[detailSym]={price:price,qty:isNaN(qty)||qty<=0?null:qty};
+  setCaricos(caricos);
+  // Aggiorna PnL
+  renderPnl(detailSym,stockData[detailSym],caricos[detailSym]);
+  showToast('✓ Prezzo di carico salvato');
+}
+
+function clearCarico(){
+  var caricos=getCaricos();
+  delete caricos[detailSym];
+  setCaricos(caricos);
+  document.getElementById('dpCarico').value='';
+  document.getElementById('dpQty').value='';
+  document.getElementById('dpPnlBox').style.display='none';
+  showToast('✓ Prezzo di carico rimosso');
+}
+
+function closeDetail(){
+  document.getElementById('detailPanel').classList.remove('open');
+  detailSym='';
+}
+
+function removeFromDetail(){
+  if(!detailSym)return;
+  removeTicker(detailSym);
+  closeDetail();
+}
+/* ---- TOAST ---- */
 var _toastTimer = null;
 function showToast(msg, duration) {
   duration = duration || 2500;
   var t = document.getElementById('toast');
   t.textContent = msg;
-  
-  // Forza reflow per resettare istantaneamente le animazioni CSS
+  // Forza reflow per riavviare l'animazione anche se era già visibile
   t.classList.remove('show');
-  void t.offsetHeight; 
+  void t.offsetHeight; // reflow
   t.classList.add('show');
-  
   clearTimeout(_toastTimer);
-  _toastTimer = setTimeout(function() { 
-    t.classList.remove('show'); 
-  }, duration);
+  _toastTimer = setTimeout(function() { t.classList.remove('show'); }, duration);
 }
 
-/* ---- DRAG AND DROP (TOUCH + MOUSE) ---- */
-var dragEl = null;
-function initDragAndDrop() {
-  var list = document.getElementById('stock-list');
-  var cards = list.querySelectorAll('.stock-card');
-  
-  cards.forEach(function(card){
-    card.draggable = true;
-    
-    // Desktop Mouse Events
-    card.addEventListener('dragstart', handleDragStart);
-    card.addEventListener('dragover', handleDragOver);
-    card.addEventListener('dragend', handleDragEnd);
-    
-    // Mobile Touch Events
-    card.addEventListener('touchstart', handleTouchStart, {passive:false});
-    card.addEventListener('touchmove', handleTouchMove, {passive:false});
-    card.addEventListener('touchend', handleTouchEnd);
-  });
+/* ---- INSTALL ---- */
+var deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();deferredPrompt=e;});
+window.addEventListener('appinstalled',function(){deferredPrompt=null;showToast('✓ App installata!');});
+function handleInstall(){
+  document.getElementById('installModal').classList.add('open');
+  document.getElementById('installNowBtn').style.display=deferredPrompt?'block':'none';
 }
+function triggerInstall(){
+  if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(function(){deferredPrompt=null;closeInstallModal();});}
+  else{closeInstallModal();showToast('Menu ⋮ → Aggiungi a schermata Home');}
+}
+function closeInstallModal(){document.getElementById('installModal').classList.remove('open');}
 
-function handleDragStart(e) {
-  dragEl = this;
-  this.classList.add('dragging');
-}
-function handleDragOver(e) {
-  if (e.preventDefault) e.preventDefault();
-  if (this !== dragEl) {
-    var list = document.getElementById('stock-list');
-    var arr = Array.from(list.children);
-    if(arr.indexOf(this) > arr.indexOf(dragEl)) {
-      list.insertBefore(dragEl, this.nextSibling);
-    } else {
-      list.insertBefore(dragEl, this);
-    }
-  }
-  return false;
-}
-function handleDragEnd() {
-  this.classList.remove('dragging');
-  saveNewOrder();
-}
+if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});}
 
-var touchStartY = 0;
-var activeTouchEl = null;
-
-function handleTouchStart(e) {
-  activeTouchEl = this;
-  touchStartY = e.touches[0].clientY;
-  this.classList.add('dragging');
-}
-function handleTouchMove(e) {
-  if(!activeTouchEl) return;
-  e.preventDefault();
-  var touchY = e.touches[0].clientY;
-  var target = document.elementFromPoint(e.touches[0].clientX, touchY);
-  if(!target) return;
-  var card = target.closest('.stock-card');
-  if(card && card !== activeTouchEl) {
-    var list = document.getElementById('stock-list');
-    var arr = Array.from(list.children);
-    if(arr.indexOf(card) > arr.indexOf(activeTouchEl)) {
-      list.insertBefore(activeTouchEl, card.nextSibling);
-    } else {
-      list.insertBefore(activeTouchEl, card);
-    }
-  }
-}
-function handleTouchEnd() {
-  if(activeTouchEl) {
-    activeTouchEl.classList.remove('dragging');
-    activeTouchEl = null;
-    saveNewOrder();
-  }
-}
-
-function saveNewOrder() {
-  var list = document.getElementById('stock-list');
-  var items = list.querySelectorAll('.stock-card');
-  var newArr = [];
-  items.forEach(function(item){
-    newArr.push(item.dataset.id);
-  });
-  tickers = newArr.join(',');
-  localStorage.setItem('tickers', tickers);
-}
-
-/* ---- REGISTRAZIONE PWA SERVICE WORKER ---- */
-if('serviceWorker' in navigator){
-  window.addEventListener('load', function(){
-    navigator.serviceWorker.register('sw.js').catch(function(){});
-  });
-}
-
-/* ---- AVVIO GENERALE ---- */
-initWorkerUI();
-refresh();
+/* ---- BOOT ---- */
+initWorkerUI();renderChips();renderList();
+if(workerUrl)refreshAll();
+if(currentPfId)updateMeta();
 </script>
 </body>
 </html>
