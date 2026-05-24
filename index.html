@@ -514,7 +514,11 @@ function saveWorkerUrl(){
   document.getElementById('workerSetup').style.display='none';
   showToast('✓ Worker salvato!');closeAllSheets();refreshAll();
 }
-function initWorkerUI(){if(workerUrl)document.getElementById('workerSetup').style.display='none';}
+function initWorkerUI(){
+  var inp = document.getElementById('workerUrlInput');
+  if(inp && workerUrl) inp.value = workerUrl;
+  if(workerUrl)document.getElementById('workerSetup').style.display='none';
+}
 
 /* ---- PORTFOLIO STORAGE ---- */
 function getSaved(){try{return JSON.parse(localStorage.getItem('borsaSavedPf')||'[]');}catch(e){return[];}}
