@@ -1,7 +1,6 @@
-[README .md](https://github.com/user-attachments/files/28176948/README.md)
 # 📈 Borsa Live
 
-App web **mobile-first** per monitorare quotazioni di borsa in tempo reale, installabile come app nativa su Android (PWA). Completamente gratuita, nessuna API key richiesta.
+App web **mobile-first** per monitorare quotazioni di borsa in tempo reale, installabile come app nativa su Android e iOS (PWA). Completamente gratuita, nessuna API key richiesta.
 
 ![GitHub Pages](https://img.shields.io/badge/deploy-GitHub%20Pages-blue)
 ![Cloudflare Workers](https://img.shields.io/badge/proxy-Cloudflare%20Workers-orange)
@@ -12,31 +11,68 @@ App web **mobile-first** per monitorare quotazioni di borsa in tempo reale, inst
 
 ## ✨ Funzionalità
 
-- 📊 Quotazioni in tempo reale (ritardo ~15 min, gratuito)
+### 📊 Quotazioni
+- Quotazioni in tempo reale (ritardo ~15 min, gratuito)
 - 🔍 **Ricerca live** per nome — digita "Ferrari" e trova `RACE.MI` senza conoscere il simbolo
 - 🇮🇹 Borsa italiana, 🇺🇸 USA, 📦 ETF/ETP, ₿ Crypto, 🥇 Materie prime, 💱 Forex
-- ➕ Aggiungi/rimuovi titoli con un tocco
-- ↕️ **Drag & drop** per riordinare i titoli (touch e mouse)
-- 💾 Lista salvata nel browser — persiste tra le sessioni
-- 🔄 Aggiornamento automatico ogni 60 secondi
-- 📲 **Installabile come app** sulla schermata Home di Android
-- 🎨 UI stile widget compatta, tema scuro
+- Preset rapidi per categoria con chip selezionabili
+- Skeleton loading durante il caricamento dei dati
+- Indicatore visivo rialzo/ribasso/invariato su ogni riga
+- 🔄 Aggiornamento automatico ogni 60 secondi con countdown nel footer
+
+### 💼 Scheda titolo (Detail Panel)
+Tocca un titolo per aprire la scheda dettaglio con:
+- Prezzo corrente in grande, variazione assoluta e percentuale
+- Chiusura precedente, mercato di quotazione, valuta
+- **Stato del mercato**: Aperto / Pre-market / After-hours / Chiuso
+- **Posizione personale**: inserisci il prezzo medio di carico e la quantità per calcolare:
+  - Variazione percentuale dal carico
+  - P&L totale in valuta
+  - Valore attuale della posizione
+- Rimozione diretta del titolo dalla scheda
+
+### 🗂 Portafogli multipli
+- Crea **più portafogli** separati, ognuno con nome e lista titoli indipendenti
+- Ogni portafoglio è protetto da un **PIN a 4 cifre** scelto alla creazione
+- **Rinomina** qualsiasi portafoglio con il prompt nativo del sistema (✏️) — funziona perfettamente su mobile
+- **Elimina** un portafoglio con conferma nativa
+- Il portafoglio attivo è evidenziato con badge verde
+- Nome del portafoglio attivo sempre visibile nell'header, toccabile per aprire il gestore
+
+### ☁ Sync cloud (opzionale)
+- **Salva su cloud** tramite il tuo Cloudflare Worker: i dati del portafoglio (nome, PIN, lista titoli) vengono sincronizzati automaticamente ad ogni modifica
+- **Carica da un altro dispositivo**: inserisci l'ID e il PIN di un portafoglio esistente per importarlo — funziona tra telefoni, tablet e desktop
+- Indicatore nel footer: ☁ = sync OK, ⚠ = worker non raggiunto
+- Il cloud è opzionale: l'app funziona completamente in locale anche senza Worker
+
+### 🛠 Gestione lista
+- ➕ Aggiungi titoli con ricerca live o selezione rapida dai preset
+- ✕ Rimuovi titoli in modalità modifica
+- ↕️ **Drag & drop** per riordinare i titoli (touch nativo e mouse)
+- 💾 Tutto salvato in `localStorage` — persiste tra le sessioni senza bisogno di account
+
+### 📲 App nativa (PWA)
+- Installabile sulla schermata Home di **Android** (Chrome) e **iOS** (Safari)
+- Guida di installazione integrata nell'app (pulsante ⬇ nell'header)
+- Supporto `safe-area-inset` per iPhone con notch
+- Service Worker per funzionamento **offline** (cache)
+- Tema scuro nativo, nessuna barra browser visibile una volta installata
 
 ---
 
 ## 🏗 Architettura
 
 ```
-GitHub Pages          Cloudflare Worker         Yahoo Finance
-(index.html)  ──►  (proxy CORS gratuito)  ──►  (dati quotazioni
-     │                                           e ricerca)
+GitHub Pages          Cloudflare Worker              Yahoo Finance
+(index.html)  ──►  (proxy CORS + storage cloud)  ──►  (quotazioni
+     │                                                  e ricerca)
      │
-     └── sw.js (Service Worker, cache offline)
-     └── manifest.json (PWA metadata)
+     └── sw.js        (Service Worker, cache offline)
+     └── manifest.json (metadati PWA)
 ```
 
-**Perché il Worker?**  
-Yahoo Finance blocca le richieste dirette dal browser (CORS). Il Worker Cloudflare fa da proxy personale: gratuito fino a 100.000 richieste/giorno, stabile e veloce.
+**Perché il Worker?**
+Yahoo Finance blocca le richieste dirette dal browser (CORS). Il Worker Cloudflare fa da proxy personale: gratuito fino a 100.000 richieste/giorno, stabile e veloce. Gestisce sia le quotazioni/ricerca sia il salvataggio dei portafogli in cloud (KV store).
 
 ---
 
@@ -71,12 +107,30 @@ Yahoo Finance blocca le richieste dirette dal browser (CORS). Il Worker Cloudfla
 2. Tocca **+** → nel pannello inserisci l'URL del Worker → **Salva**
 3. I dati vengono caricati subito ✓
 
-### Parte 4 — Installazione su Android
+### Parte 4 — Creare il primo portafoglio
 
-1. Apri Chrome sul telefono → vai sull'URL GitHub Pages
+1. Tocca il nome del portafoglio nell'header → si apre il **Gestore portafogli**
+2. Inserisci un nome (es. "Azionario IT") → tocca **Crea**
+3. Scegli un PIN a 4 cifre — ti servirà per accedere da altri dispositivi
+4. Aggiungi titoli con il pulsante **+**
+
+### Parte 5 — Caricare un portafoglio su un altro dispositivo
+
+1. Sul dispositivo originale: annota l'**ID** del portafoglio (visibile nella card, es. `A1B2C3D4`)
+2. Sul nuovo dispositivo: apri il Gestore portafogli → sezione **"Carica da un altro dispositivo"**
+3. Inserisci ID e PIN → il portafoglio viene scaricato dal cloud ✓
+
+### Parte 6 — Installazione come app
+
+**Android (Chrome):**
+1. Apri Chrome → vai sull'URL GitHub Pages
 2. Tocca l'icona **⬇** nell'header → segui le istruzioni
 3. Oppure: **menu ⋮ → Aggiungi a schermata Home**
-4. L'icona appare sulla Home come un'app nativa 🎉
+
+**iOS (Safari):**
+1. Apri Safari → vai sull'URL GitHub Pages
+2. Tocca **Condividi** → **Aggiungi alla schermata Home**
+3. L'icona appare sulla Home come un'app nativa 🎉
 
 ---
 
@@ -101,9 +155,9 @@ Yahoo Finance blocca le richieste dirette dal browser (CORS). Il Worker Cloudfla
 | File | Descrizione |
 |------|-------------|
 | `index.html` | App completa (HTML + CSS + JS in un unico file) |
-| `worker.js` | Proxy Cloudflare — da deployare su Cloudflare Workers |
-| `manifest.json` | Metadati PWA (nome, icona, colori) |
-| `sw.js` | Service Worker per funzionamento offline |
+| `worker.js` | Proxy Cloudflare — gestisce quotazioni, ricerca e sync portafogli (KV) |
+| `manifest.json` | Metadati PWA (nome, icona, colori, display mode) |
+| `sw.js` | Service Worker per funzionamento offline e cache |
 | `icon-192.png` | Icona app 192×192px |
 | `icon-512.png` | Icona app 512×512px |
 
@@ -114,18 +168,24 @@ Yahoo Finance blocca le richieste dirette dal browser (CORS). Il Worker Cloudfla
 ### Colori (CSS variables in `index.html`)
 ```css
 :root {
-  --bg: #0f0f14;        /* sfondo */
-  --accent: #7c6af7;    /* colore principale */
-  --green: #22c97a;     /* rialzo */
-  --red: #e8504a;       /* ribasso */
+  --bg: #0f0f14;        /* sfondo principale */
+  --accent: #7c6af7;    /* colore primario (pulsanti, focus) */
+  --green: #22c97a;     /* rialzo / positivo */
+  --red: #e8504a;       /* ribasso / negativo */
 }
 ```
 
-### Intervallo aggiornamento
-Cerca `countdownSec=60` nel JS e cambia il valore in secondi.
+### Intervallo aggiornamento automatico
+Cerca `countdownSec=60` nel JS e cambia il valore (in secondi).
+
+### Titoli di default
+I titoli mostrati alla prima apertura (prima di creare un portafoglio) sono definiti in:
+```js
+if (!tickers.length) tickers = ['ENI.MI', 'UCG.MI', 'AAPL', 'BTC-USD'];
+```
 
 ### Aggiornare il Worker su Cloudflare
-Se aggiorni `worker.js`, ricordati di rideplogare anche su Cloudflare:
+Se modifichi `worker.js`, ricordati di ridistribuirlo:
 Dashboard → il tuo worker → **Edit code** → incolla → **Deploy**.
 
 ---
@@ -133,8 +193,9 @@ Dashboard → il tuo worker → **Edit code** → incolla → **Deploy**.
 ## 🔒 Privacy e sicurezza
 
 - Nessun dato personale viene raccolto
-- La lista dei titoli è salvata **solo nel browser locale** (localStorage)
-- Il Worker Cloudflare fa solo da proxy: non registra né conserva dati
+- La lista dei titoli e i portafogli sono salvati **solo nel browser locale** (localStorage)
+- Il Worker Cloudflare fa da proxy: non registra né conserva dati al di fuori di ciò che tu stesso salvi in cloud tramite la funzione sync
+- I portafogli cloud sono protetti da PIN — senza PIN corretto non è possibile caricare i dati
 - Nessun account richiesto, nessuna registrazione
 
 ---
