@@ -343,7 +343,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);
   <div id="searchResults" style="display:none"></div>
   <div style="padding:0 18px 8px;flex-shrink:0" id="isinHint">
     <span style="font-family:var(--mono);font-size:10px;color:var(--muted)">
-      💡 Puoi cercare per nome, simbolo o <strong style="color:var(--accent2)">codice ISIN</strong> (es. IT0005534141)
+      💡 Puoi cercare per nome, simbolo o <strong style="color:var(--accent2)">codice ISIN</strong>
     </span>
   </div>
   <div class="sheet-divider" id="sheetDivider"></div>
@@ -631,31 +631,55 @@ function onSearchInput(val){
   var res=document.getElementById('searchResults'),div=document.getElementById('sheetDivider');
   if(!val){clearSearch();return;}
   res.style.display='block';div.style.display='none';
-  // Se sembra un ISIN, mostra subito un hint mentre cerca
+  
+  // Se è un ISIN, eseguiamo subito la ricerca veloce
   if(isISIN(val)){
-    res.innerHTML='<div class="search-hint" style="color:var(--accent2)">🔍 Ricerca ISIN: '+val.toUpperCase()+'…</div>';
+    res.innerHTML='<div class="search-loading"><span></span><span></span><span></span></div>';
   } else {
     res.innerHTML='<div class="search-loading"><span></span><span></span><span></span></div>';
   }
   clearTimeout(searchTimer);
   searchTimer=setTimeout(function(){doSearch(val.toUpperCase());},isISIN(val)?100:380);
 }
+
 async function doSearch(q){
   if(!workerUrl){document.getElementById('searchResults').innerHTML='<div class="search-hint">⚠ Configura prima il Worker</div>';return;}
-  try{
+  
+  var isIsinCode = isISIN(q);
+  var html = '';
+
+  // Se l'utente ha inserito un ISIN valido, prepariamo IMMEDIATAMENTE un blocco 
+  // che permette di aggiungerlo alla lista. Ignoriamo se Yahoo non ce lo propone nell'elenco.
+  if(isIsinCode) {
+    var added = tickers.indexOf(q) !== -1;
+    html += '<div class="result-row" style="border:1px solid rgba(124,106,247,0.4); background:rgba(124,106,247,0.08)" onclick="addFromSearch(\''+q+'\')">' +
+      '<div class="result-avatar" style="background:var(--accent);font-size:11px">ISIN</div>'+
+      '<div class="result-info"><div class="result-name">Forza aggiunta ISIN</div>'+
+      '<div class="result-sym">'+q+'</div></div>'+
+      '<button class="result-add'+(added?' added':'')+'" onclick="event.stopPropagation();addFromSearch(\''+q+'\')">'+(added?'✓':'+')+'</button>'+
+    '</div>';
+  }
+
+  try {
     var r=await fetch(workerUrl+'?q='+encodeURIComponent(q),{signal:AbortSignal.timeout(8000)});
     var j=await r.json();
-    if(document.getElementById('searchInput').value.trim()!==q)return;
+    
+    if(document.getElementById('searchInput').value.trim().toUpperCase()!==q) return;
+
     var quotes=(j.quotes||[]).filter(function(x){
       return x.symbol&&['EQUITY','ETF','CRYPTOCURRENCY','FUTURE','CURRENCY','BOND','MUTUALFUND','INDEX'].indexOf(x.quoteType)!==-1;
     }).slice(0,8);
-    if(!quotes.length){document.getElementById('searchResults').innerHTML='<div class="search-hint">Nessun risultato</div>';return;}
-    document.getElementById('searchResults').innerHTML=quotes.map(function(x){
+
+    if(!quotes.length && !isIsinCode){
+      document.getElementById('searchResults').innerHTML='<div class="search-hint">Nessun risultato</div>';
+      return;
+    }
+
+    html += quotes.map(function(x){
       var sym=x.symbol||'',name=x.longname||x.shortname||sym;
       var added=tickers.indexOf(sym)!==-1;
       var safe=sym.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
       var sn=name.length>26?name.substring(0,24)+'…':name;
-    var typeLabel=x.quoteType==='BOND'?' · Bond':x.quoteType==='MUTUALFUND'?' · Fund':x.quoteType==='INDEX'?' · Index':'';
       return '<div class="result-row" onclick="addFromSearch(\''+safe+'\')">' +
         '<div class="result-avatar" style="background:'+aColor(sym)+'">'+aLetter(name,sym)+'</div>'+
         '<div class="result-info"><div class="result-name">'+sn+'</div>'+
@@ -663,8 +687,19 @@ async function doSearch(q){
         '<button class="result-add'+(added?' added':'')+'" onclick="event.stopPropagation();addFromSearch(\''+safe+'\')">'+(added?'✓':'+')+'</button>'+
       '</div>';
     }).join('');
-  }catch(e){document.getElementById('searchResults').innerHTML='<div class="search-hint">Errore, riprova</div>';}
+
+    document.getElementById('searchResults').innerHTML = html;
+
+  } catch(e) {
+    // Se c'è un errore API ma l'utente ha scritto un ISIN, mostriamo comunque il tasto di aggiunta ISIN
+    if(isIsinCode) {
+       document.getElementById('searchResults').innerHTML = html;
+    } else {
+       document.getElementById('searchResults').innerHTML='<div class="search-hint">Errore, riprova</div>';
+    }
+  }
 }
+
 function clearSearch(){
   clearTimeout(searchTimer);
   document.getElementById('searchInput').value='';
