@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Borsa Live">
 <meta name="theme-color" content="#0a0a0f">
-<link class="apple-touch-icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -36,7 +36,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);
 .header-sub{font-family:var(--mono);font-size:11px;color:var(--muted)}
 .header-btns{display:flex;align-items:center;gap:14px}
 
-/* PULSANTI HEADER FIX */
+/* PULSANTI HEADER FIX: Hover solo su desktop, classe spinning */
 .btn-hdr{background:none;border:none;cursor:pointer;color:var(--muted);
   padding:4px;transition:color .15s;display:flex;align-items:center;
   -webkit-tap-highlight-color:transparent}
@@ -343,7 +343,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);
   <div id="searchResults" style="display:none"></div>
   <div style="padding:0 18px 8px;flex-shrink:0" id="isinHint">
     <span style="font-family:var(--mono);font-size:10px;color:var(--muted)">
-      💡 Puoi cercare per nome, simbolo o <strong style="color:var(--accent2)">codice ISIN</strong>
+      💡 Puoi cercare per nome, simbolo o <strong style="color:var(--accent2)">codice ISIN</strong> (es. IT0005534141)
     </span>
   </div>
   <div class="sheet-divider" id="sheetDivider"></div>
@@ -505,13 +505,12 @@ var PRESETS={
   'materie':[{sym:'GC=F',label:'Oro'},{sym:'SI=F',label:'Argento'},{sym:'CL=F',label:'Petrolio WTI'},{sym:'BZ=F',label:'Brent'},{sym:'NG=F',label:'Gas'},{sym:'HG=F',label:'Rame'}],
   'forex':[{sym:'EURUSD=X',label:'EUR/USD'},{sym:'GBPUSD=X',label:'GBP/USD'},{sym:'USDJPY=X',label:'USD/JPY'},{sym:'EURGBP=X',label:'EUR/GBP'},{sym:'USDCHF=X',label:'USD/CHF'},{sym:'EURJPY=X',label:'EUR/JPY'}],
   'bond':[
-    {sym:'IPIT.MI',label:'iShares ETF BTP'},
-    {sym:'BTP10.MI',label:'Lyxor BTP 10Y'},
-    {sym:'IT0005618890',label:'BTP 2029 3.35%'},
-    {sym:'IT0005534141',label:'BTP 2072 2.15%'},
-    {sym:'IT0005480980',label:'BTP 2031 0.95%'},
-    {sym:'IT0005209208',label:'BTP 2026 0.05%'},
-    {sym:'IT0005437147',label:'BTP 2030 1.65%'},
+    {sym:'BTPI.MI',label:'ETF BTP Italia'},
+    {sym:'IT0005618890',label:'BTP 2029 3,35%'},
+    {sym:'IT0005534141',label:'BTP 2072 2,15%'},
+    {sym:'IT0005480980',label:'BTP 2031 0,95%'},
+    {sym:'IT0005209208',label:'BTP 2026 0,05%'},
+    {sym:'IT0005437147',label:'BTP 2030 1,65%'},
     {sym:'XS2314660700',label:'ENI 2031'},
     {sym:'XS2520271695',label:'Enel 2029'},
     {sym:'IT0005252520',label:'CCT 2024'},
@@ -632,7 +631,7 @@ function onSearchInput(val){
   var res=document.getElementById('searchResults'),div=document.getElementById('sheetDivider');
   if(!val){clearSearch();return;}
   res.style.display='block';div.style.display='none';
-  
+  // Se sembra un ISIN, mostra subito un hint mentre cerca
   if(isISIN(val)){
     res.innerHTML='<div class="search-hint" style="color:var(--accent2)">🔍 Ricerca ISIN: '+val.toUpperCase()+'…</div>';
   } else {
@@ -641,43 +640,22 @@ function onSearchInput(val){
   clearTimeout(searchTimer);
   searchTimer=setTimeout(function(){doSearch(val.toUpperCase());},isISIN(val)?100:380);
 }
-
 async function doSearch(q){
   if(!workerUrl){document.getElementById('searchResults').innerHTML='<div class="search-hint">⚠ Configura prima il Worker</div>';return;}
-  
-  var isIsinCode = isISIN(q);
-  var html = '';
-
-  if(isIsinCode) {
-    var added = tickers.indexOf(q) !== -1;
-    html += '<div class="result-row" style="border:1px solid rgba(124,106,247,0.4); background:rgba(124,106,247,0.08)" onclick="addFromSearch(\''+q+'\')">' +
-      '<div class="result-avatar" style="background:var(--accent);font-size:11px">ISIN</div>'+
-      '<div class="result-info"><div class="result-name">Forza aggiunta ISIN</div>'+
-      '<div class="result-sym">'+q+'</div></div>'+
-      '<button class="result-add'+(added?' added':'')+'" onclick="event.stopPropagation();addFromSearch(\''+q+'\')">'+(added?'✓':'+')+'</button>'+
-    '</div>';
-  }
-
-  try {
+  try{
     var r=await fetch(workerUrl+'?q='+encodeURIComponent(q),{signal:AbortSignal.timeout(8000)});
     var j=await r.json();
-    
-    if(document.getElementById('searchInput').value.trim().toUpperCase()!==q) return;
-
+    if(document.getElementById('searchInput').value.trim()!==q)return;
     var quotes=(j.quotes||[]).filter(function(x){
       return x.symbol&&['EQUITY','ETF','CRYPTOCURRENCY','FUTURE','CURRENCY','BOND','MUTUALFUND','INDEX'].indexOf(x.quoteType)!==-1;
     }).slice(0,8);
-
-    if(!quotes.length && !isIsinCode){
-      document.getElementById('searchResults').innerHTML='<div class="search-hint">Nessun risultato</div>';
-      return;
-    }
-
-    html += quotes.map(function(x){
+    if(!quotes.length){document.getElementById('searchResults').innerHTML='<div class="search-hint">Nessun risultato</div>';return;}
+    document.getElementById('searchResults').innerHTML=quotes.map(function(x){
       var sym=x.symbol||'',name=x.longname||x.shortname||sym;
       var added=tickers.indexOf(sym)!==-1;
       var safe=sym.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
       var sn=name.length>26?name.substring(0,24)+'…':name;
+    var typeLabel=x.quoteType==='BOND'?' · Bond':x.quoteType==='MUTUALFUND'?' · Fund':x.quoteType==='INDEX'?' · Index':'';
       return '<div class="result-row" onclick="addFromSearch(\''+safe+'\')">' +
         '<div class="result-avatar" style="background:'+aColor(sym)+'">'+aLetter(name,sym)+'</div>'+
         '<div class="result-info"><div class="result-name">'+sn+'</div>'+
@@ -685,18 +663,8 @@ async function doSearch(q){
         '<button class="result-add'+(added?' added':'')+'" onclick="event.stopPropagation();addFromSearch(\''+safe+'\')">'+(added?'✓':'+')+'</button>'+
       '</div>';
     }).join('');
-
-    document.getElementById('searchResults').innerHTML = html;
-
-  } catch(e) {
-    if(isIsinCode) {
-       document.getElementById('searchResults').innerHTML = html;
-    } else {
-       document.getElementById('searchResults').innerHTML='<div class="search-hint">Errore, riprova</div>';
-    }
-  }
+  }catch(e){document.getElementById('searchResults').innerHTML='<div class="search-hint">Errore, riprova</div>';}
 }
-
 function clearSearch(){
   clearTimeout(searchTimer);
   document.getElementById('searchInput').value='';
@@ -777,9 +745,9 @@ function updateMeta(){
 
 /* Carica UN titolo e aggiorna solo quella riga */
 async function fetchAndRender(sym){
-  updateRow(sym);
+  updateRow(sym); // mostra skeleton subito
   try{stockData[sym]=await fetchStock(sym);}catch(e){stockData[sym]={error:true};}
-  updateRow(sym);
+  updateRow(sym); // aggiorna con dati reali
   updateMeta();renderChips();
 }
 
@@ -876,7 +844,7 @@ function openAddSheet(){
   setTimeout(function(){document.getElementById('searchInput').focus();},400);
 }
 function openPortfolioSheet(){
-  syncCurrentPf();
+  syncCurrentPf(); // aggiorna tickers prima di mostrare
   document.getElementById('overlay').classList.add('open');
   document.getElementById('portfolioSheet').classList.add('open');
   renderPfList();
@@ -912,6 +880,7 @@ function renderPfList(){
           '<button class="btn-pf-sm danger" onclick="deletePf(\''+safeId+'\')">🗑</button>'+
         '</div>'+
       '</div>'+
+      // Area rinomina (nascosta di default)
       '<div class="pf-rename-row" id="rename-'+pf.id+'" style="display:none">'+
         '<input class="pf-rename-input" id="rename-input-'+pf.id+'" value="'+pf.name+'" maxlength="30" onkeydown="if(event.key===\'Enter\')confirmRename(\''+safeId+'\')">'+
         '<button class="btn-rename-ok" onclick="confirmRename(\''+safeId+'\')">✓</button>'+
@@ -922,6 +891,7 @@ function renderPfList(){
 }
 
 function selectPf(id){
+  // Salva portafoglio corrente prima di cambiare
   syncCurrentPf();
   if(currentPfId)autoSave();
 
@@ -939,6 +909,7 @@ function selectPf(id){
 }
 
 function startRename(id){
+  // Nascondi altri rename aperti
   document.querySelectorAll('[id^="rename-"]').forEach(function(el){
     if(el.id!=='rename-'+id)el.style.display='none';
   });
@@ -976,6 +947,7 @@ function deletePf(id){
   var saved=getSaved();
   var pf=saved.find(function(p){return p.id===id;});
   if(!pf)return;
+  // Usa confirm solo su desktop; su mobile mostra comunque
   var ok=window.confirm?window.confirm('Eliminare "'+pf.name+'"?\nViene rimosso dal dispositivo.'):true;
   if(!ok)return;
   saved=saved.filter(function(p){return p.id!==id;});setSaved(saved);
@@ -1036,6 +1008,7 @@ async function confirmPin(){
     showToast('Caricamento…');
     var pf=await loadCloud(loadId,pin);
     if(!pf){showToast('⚠ ID o PIN errato');pinBuf='';updateDots();return;}
+    // Salva portafoglio corrente prima
     syncCurrentPf();if(currentPfId)await saveCloud();
     currentPfId=pf.id;currentPfName=pf.name;currentPin=pin;
     tickers=pf.tickers.slice();
@@ -1070,6 +1043,7 @@ function addTicker(sym){
   if(tickers.indexOf(sym)!==-1){showToast('⚠ '+sym+' già in lista');return;}
   tickers.push(sym);saveLocal();
   closeAllSheets();
+  // Aggiorna immediatamente: aggiungi skeleton poi carica
   var list=document.getElementById('stockList');
   var tmp=document.createElement('div');tmp.innerHTML=skelRow(sym);
   list.appendChild(tmp.firstElementChild);
@@ -1084,6 +1058,7 @@ function removeTicker(sym){
   tickers=tickers.filter(function(t){return t!==sym;});
   delete stockData[sym];
   saveLocal();
+  // Rimuovi la riga immediatamente senza ridisegnare tutto
   var el=document.getElementById(escId(sym));if(el)el.remove();
   updateMeta();renderChips();
   autoSave();
@@ -1174,6 +1149,7 @@ function saveCarico(){
   var caricos=getCaricos();
   caricos[detailSym]={price:price,qty:isNaN(qty)||qty<=0?null:qty};
   setCaricos(caricos);
+  // Aggiorna PnL
   renderPnl(detailSym,stockData[detailSym],caricos[detailSym]);
   showToast('✓ Prezzo di carico salvato');
 }
@@ -1204,8 +1180,9 @@ function showToast(msg, duration) {
   duration = duration || 2500;
   var t = document.getElementById('toast');
   t.textContent = msg;
+  // Forza reflow per riavviare l'animazione anche se era già visibile
   t.classList.remove('show');
-  void t.offsetHeight;
+  void t.offsetHeight; // reflow
   t.classList.add('show');
   clearTimeout(_toastTimer);
   _toastTimer = setTimeout(function() { t.classList.remove('show'); }, duration);
