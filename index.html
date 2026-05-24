@@ -35,17 +35,11 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);
 .portfolio-title:active{opacity:.7}
 .header-sub{font-family:var(--mono);font-size:11px;color:var(--muted)}
 .header-btns{display:flex;align-items:center;gap:14px}
-
-/* PULSANTI HEADER FIX: Hover solo su desktop, classe spinning */
 .btn-hdr{background:none;border:none;cursor:pointer;color:var(--muted);
-  padding:4px;transition:color .15s;display:flex;align-items:center;
-  -webkit-tap-highlight-color:transparent}
-.btn-hdr:active{color:var(--text)}
-@media(hover:hover){ .btn-hdr:hover{color:var(--text)} }
+  padding:4px;transition:color .15s;display:flex;align-items:center}
+.btn-hdr:hover,.btn-hdr:active{color:var(--text)}
 .btn-hdr.editing{color:var(--accent2)}
 .btn-hdr svg{width:20px;height:20px;transform-origin:center}
-.btn-hdr.spinning{color:var(--accent2);pointer-events:none}
-.btn-hdr.spinning svg{animation:spin .7s linear infinite}
 
 /* STOCK LIST */
 .stock-list{flex:1;overflow-y:auto;overflow-x:hidden;padding:0 8px;
@@ -284,6 +278,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);
   border-radius:12px;padding:12px;color:var(--red);font-family:var(--mono);
   font-size:13px;cursor:pointer;margin-top:8px}
 
+/* TOAST FIX: Aggiunta opacità e transizione combinata */
 .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(80px);
   background:#222233;border:1px solid var(--border2);border-radius:10px;padding:9px 18px;
   font-family:var(--mono);font-size:12px;color:var(--text);
@@ -300,7 +295,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);
     <span class="header-sub" id="headerSub">—</span>
   </div>
   <div class="header-btns">
-    <button class="btn-hdr" id="refreshBtn" onclick="refreshAll()" title="Aggiorna">
+    <button class="btn-hdr" id="refreshBtn" onclick="this.blur();refreshAll()" title="Aggiorna">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
     </button>
     <button class="btn-hdr" id="editBtn" onclick="toggleEdit()" title="Modifica">
@@ -487,7 +482,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);
 /* ================================================================
    BORSA LIVE v9
    Fix: aggiornamento immediato senza refresh, rinomina inline,
-        sync portafoglio corrente prima di cambiare, UI touch
+        sync portafoglio corrente prima di cambiare
 ================================================================ */
 
 /* ---- PRESETS ---- */
@@ -724,7 +719,10 @@ async function fetchAndRender(sym){
 
 function setRefreshSpin(on) {
   var rb = document.getElementById('refreshBtn');
-  if (rb) rb.classList.toggle('spinning', on);
+  if (!rb) return;
+  var svg = rb.querySelector('svg');
+  if (svg) svg.style.animation = on ? 'spin .7s linear infinite' : '';
+  rb.style.color = on ? 'var(--accent2)' : '';
 }
 
 async function refreshAll(){
