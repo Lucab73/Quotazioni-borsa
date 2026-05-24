@@ -36,7 +36,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);
 .header-sub{font-family:var(--mono);font-size:11px;color:var(--muted)}
 .header-btns{display:flex;align-items:center;gap:14px}
 
-/* PULSANTI HEADER FIX: Hover solo su desktop, classe spinning */
+/* PULSANTI HEADER FIX */
 .btn-hdr{background:none;border:none;cursor:pointer;color:var(--muted);
   padding:4px;transition:color .15s;display:flex;align-items:center;
   -webkit-tap-highlight-color:transparent}
@@ -160,7 +160,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);
 .pf-card{background:rgba(255,255,255,0.05);border:1px solid var(--border2);border-radius:14px;
   padding:12px 14px;margin-bottom:8px;transition:border-color .15s}
 .pf-card.active-pf{border-color:var(--green)}
-.pf-card-top{display:flex;align-items:center;gap:10px}
+.pf-card-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .pf-card-icon{font-size:24px;flex-shrink:0}
 .pf-card-info{flex:1;min-width:0;cursor:pointer}
 .pf-card-name{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -174,13 +174,13 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);
 .btn-pf-sm.danger{color:var(--red);border-color:rgba(232,80,74,0.25)}
 
 /* RENAME INPUT inline */
-.pf-rename-row{display:flex;gap:6px;margin-top:8px}
-.pf-rename-input{flex:1;background:rgba(255,255,255,0.07);border:1px solid var(--accent);
-  border-radius:8px;padding:7px 10px;color:var(--text);font-size:13px;outline:none}
-.btn-rename-ok{background:var(--accent);border:none;border-radius:8px;padding:7px 12px;
-  color:#fff;font-size:12px;font-weight:600;cursor:pointer}
+.pf-rename-row{display:none;gap:8px;align-items:center;margin-top:2px;width:100%}
+.pf-rename-input{flex:1;width:100%;min-width:0;background:rgba(255,255,255,0.07);border:1px solid var(--accent);
+  border-radius:8px;padding:8px 12px;color:var(--text);font-size:14px;outline:none}
+.btn-rename-ok{background:var(--accent);border:none;border-radius:8px;padding:8px 14px;
+  color:#fff;font-size:13px;font-weight:600;cursor:pointer;flex-shrink:0}
 .btn-rename-cancel{background:none;border:1px solid var(--border2);border-radius:8px;
-  padding:7px 10px;color:var(--muted);font-size:12px;cursor:pointer}
+  padding:8px 12px;color:var(--muted);font-size:13px;cursor:pointer;flex-shrink:0}
 
 /* PIN */
 .pin-display{display:flex;gap:10px;justify-content:center;margin:16px 0}
@@ -301,7 +301,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);
   </div>
   <div class="header-btns">
     <button class="btn-hdr" id="refreshBtn" onclick="refreshAll()" title="Aggiorna">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 complement 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
     </button>
     <button class="btn-hdr" id="editBtn" onclick="toggleEdit()" title="Modifica">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
@@ -327,7 +327,10 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);
 <!-- ADD SHEET -->
 <div class="sheet" id="addSheet">
   <div class="sheet-handle"></div>
-  <div class="sheet-title">Aggiungi titolo</div>
+  <div class="sheet-title" style="display:flex;justify-content:space-between;align-items:center;padding-right:18px">
+    <span>Aggiungi titolo</span>
+    <button class="btn-pf-sm" onclick="toggleWorkerSetup()" style="font-size:11px;padding:3px 8px">Proxy Worker ⚙</button>
+  </div>
   <div class="worker-setup" id="workerSetup">
     <p>⚠ Configura il proxy su <a href="https://workers.cloudflare.com" target="_blank">Cloudflare Workers</a> con <code>worker.js</code>:</p>
     <div class="worker-row">
@@ -392,7 +395,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);
       <button class="num-btn" onclick="pinDigit('4')">4</button>
       <button class="num-btn" onclick="pinDigit('5')">5</button>
       <button class="num-btn" onclick="pinDigit('6')">6</button>
-      <button class="num-btn" onclick="pinDigit('7')">7</button>
+      <button class="num-btn" onclick="event.stopPropagation(); pinDigit('7')">7</button>
       <button class="num-btn" onclick="pinDigit('8')">8</button>
       <button class="num-btn" onclick="pinDigit('9')">9</button>
       <button class="num-btn empty"></button>
@@ -515,6 +518,19 @@ function saveWorkerUrl(){
   showToast('✓ Worker salvato!');closeAllSheets();refreshAll();
 }
 function initWorkerUI(){if(workerUrl)document.getElementById('workerSetup').style.display='none';}
+function toggleWorkerSetup(){
+  var ws = document.getElementById('workerSetup');
+  if(ws) {
+    ws.style.display = ws.style.display === 'none' ? 'block' : 'none';
+    if(ws.style.display === 'block') {
+      var inp = document.getElementById('workerUrlInput');
+      if(inp) {
+        inp.value = workerUrl;
+        inp.focus();
+      }
+    }
+  }
+}
 
 /* ---- PORTFOLIO STORAGE ---- */
 function getSaved(){try{return JSON.parse(localStorage.getItem('borsaSavedPf')||'[]');}catch(e){return[];}}
@@ -839,7 +855,7 @@ function renderPfList(){
     var isActive=pf.id===currentPfId;
     var safeId=pf.id.replace(/'/g,"\\'");
     return '<div class="pf-card'+(isActive?' active-pf':'')+'" id="pfc-'+pf.id+'">'+
-      '<div class="pf-card-top">'+
+      '<div class="pf-card-top" id="pf-top-'+pf.id+'">'+
         '<div class="pf-card-icon" onclick="selectPf(\''+safeId+'\')">📊</div>'+
         '<div class="pf-card-info" onclick="selectPf(\''+safeId+'\')">'+
           '<div class="pf-card-name">'+pf.name+'</div>'+
@@ -847,15 +863,15 @@ function renderPfList(){
         '</div>'+
         '<div class="pf-card-actions">'+
           (isActive?'<div class="pf-badge">attivo</div>':'')+
-          '<button class="btn-pf-sm" onclick="startRename(\''+safeId+'\')">✏️</button>'+
-          '<button class="btn-pf-sm danger" onclick="deletePf(\''+safeId+'\')">🗑</button>'+
+          '<button class="btn-pf-sm" onclick="event.stopPropagation(); startRename(\''+safeId+'\')">✏️</button>'+
+          '<button class="btn-pf-sm danger" onclick="event.stopPropagation(); deletePf(\''+safeId+'\')">🗑</button>'+
         '</div>'+
       '</div>'+
       // Area rinomina (nascosta di default)
-      '<div class="pf-rename-row" id="rename-'+pf.id+'" style="display:none">'+
-        '<input class="pf-rename-input" id="rename-input-'+pf.id+'" value="'+pf.name+'" maxlength="30" onkeydown="if(event.key===\'Enter\')confirmRename(\''+safeId+'\')">'+
-        '<button class="btn-rename-ok" onclick="confirmRename(\''+safeId+'\')">✓</button>'+
-        '<button class="btn-rename-cancel" onclick="cancelRename(\''+safeId+'\')">✕</button>'+
+      '<div class="pf-rename-row" id="rename-'+pf.id+'" style="display:none" onclick="event.stopPropagation()">'+
+        '<input class="pf-rename-input" id="rename-input-'+pf.id+'" value="'+pf.name+'" maxlength="30" onkeydown="if(event.key===\'Enter\'){ event.stopPropagation(); confirmRename(\''+safeId+'\'); }" onclick="event.stopPropagation()">'+
+        '<button class="btn-rename-ok" onclick="event.stopPropagation(); confirmRename(\''+safeId+'\')">✓</button>'+
+        '<button class="btn-rename-cancel" onclick="event.stopPropagation(); cancelRename(\''+safeId+'\')">✕</button>'+
       '</div>'+
     '</div>';
   }).join('');
@@ -880,20 +896,42 @@ function selectPf(id){
 }
 
 function startRename(id){
-  // Nascondi altri rename aperti
+  // Ripristina eventuali altri rename aperti prima
   document.querySelectorAll('[id^="rename-"]').forEach(function(el){
-    if(el.id!=='rename-'+id)el.style.display='none';
+    var cardId = el.id.replace('rename-', '');
+    el.style.display='none';
+    var top = document.getElementById('pf-top-' + cardId);
+    if(top) top.style.display = 'flex';
   });
-  var row=document.getElementById('rename-'+id);
-  if(!row)return;
-  row.style.display='flex';
-  var inp=document.getElementById('rename-input-'+id);
-  if(inp){inp.focus();inp.select();}
+
+  // Nascondi il contenuto informativo di questa card
+  var top = document.getElementById('pf-top-' + id);
+  if(top) top.style.display = 'none';
+
+  // Mostra la riga di rinomina
+  var row = document.getElementById('rename-' + id);
+  if(row) row.style.display = 'flex';
+
+  // Focus sull'input
+  var inp = document.getElementById('rename-input-' + id);
+  if(inp){
+    setTimeout(function() {
+      inp.focus();
+      try {
+        var len = inp.value.length;
+        inp.setSelectionRange(len, len);
+      } catch(e) {
+        inp.select();
+      }
+    }, 80);
+  }
 }
 
 function cancelRename(id){
   var row=document.getElementById('rename-'+id);
   if(row)row.style.display='none';
+  var top = document.getElementById('pf-top-'+id);
+  if(top)top.style.display='flex';
 }
 
 function confirmRename(id){
