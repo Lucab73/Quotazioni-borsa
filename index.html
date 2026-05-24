@@ -119,6 +119,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);
 .search-loading{padding:14px;text-align:center}
 .search-loading span{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--muted);animation:dot 1.2s infinite;margin:0 2px}
 .search-loading span:nth-child(2){animation-delay:.2s}.search-loading span:nth-child(3){animation-delay:.4s}
+@keyframes spin{to{transform:rotate(360deg)}}
 @keyframes dot{0%,80%,100%{opacity:.2}40%{opacity:1}}
 .sheet-divider{height:1px;background:var(--border);margin:4px 18px 10px;flex-shrink:0}
 .sheet-tabs{display:flex;overflow-x:auto;scrollbar-width:none;padding:0 18px 10px;gap:6px;flex-shrink:0}
@@ -217,6 +218,67 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);
 .btn-inst-s{background:rgba(255,255,255,0.07);border:1px solid var(--border2);border-radius:12px;padding:13px 18px;color:var(--muted);font-size:14px;cursor:pointer}
 
 /* TOAST */
+
+/* DETAIL PANEL */
+.detail-panel{position:fixed;inset:0;z-index:80;display:flex;flex-direction:column;
+  background:var(--bg);transform:translateX(100%);transition:transform .32s cubic-bezier(.32,.72,0,1)}
+.detail-panel.open{transform:translateX(0)}
+.dp-header{display:flex;align-items:center;gap:12px;
+  padding:16px 18px 14px;padding-top:calc(16px + env(safe-area-inset-top));
+  border-bottom:1px solid var(--border);flex-shrink:0}
+.dp-back{background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;padding:4px;flex-shrink:0}
+.dp-back:active{color:var(--text)}
+.dp-title{flex:1}
+.dp-name{font-size:16px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dp-sym{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:1px}
+.dp-avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:18px;font-weight:700;color:#fff;flex-shrink:0}
+
+.dp-body{flex:1;overflow-y:auto;padding:18px;scrollbar-width:none}
+.dp-body::-webkit-scrollbar{display:none}
+
+/* Prezzo principale */
+.dp-price-block{text-align:center;padding:20px 0 24px}
+.dp-price{font-family:var(--mono);font-size:38px;font-weight:500;letter-spacing:-.03em;line-height:1}
+.dp-change{font-family:var(--mono);font-size:14px;margin-top:6px}
+.dp-change.pos{color:var(--green)}.dp-change.neg{color:var(--red)}.dp-change.flat{color:var(--muted)}
+.dp-currency{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:4px}
+
+/* Info griglia */
+.dp-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.dp-cell{background:var(--card);border-radius:12px;padding:12px 14px}
+.dp-cell-label{font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+.dp-cell-value{font-family:var(--mono);font-size:15px;font-weight:500}
+.dp-cell-value.pos{color:var(--green)}.dp-cell-value.neg{color:var(--red)}
+
+/* Sezione carico */
+.dp-section-title{font-family:var(--mono);font-size:10px;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px}
+.dp-carico-box{background:var(--card);border-radius:14px;padding:16px;margin-bottom:16px}
+.dp-carico-row{display:flex;gap:10px;margin-bottom:10px}
+.dp-carico-input{flex:1;background:rgba(255,255,255,0.07);border:1px solid var(--border2);
+  border-radius:10px;padding:10px 13px;color:var(--text);font-family:var(--mono);
+  font-size:15px;outline:none;min-width:0}
+.dp-carico-input:focus{border-color:var(--accent)}
+.dp-carico-input::placeholder{color:var(--muted);font-size:13px}
+.dp-carico-label{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:6px}
+.btn-dp{background:var(--accent);border:none;border-radius:10px;padding:10px 16px;
+  color:#fff;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+.btn-dp.sec{background:rgba(255,255,255,0.08);color:var(--muted)}
+
+/* PnL card */
+.dp-pnl{background:var(--card);border-radius:14px;padding:16px;margin-bottom:16px}
+.dp-pnl-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;
+  border-bottom:1px solid var(--border)}
+.dp-pnl-row:last-child{border-bottom:none}
+.dp-pnl-label{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.dp-pnl-value{font-family:var(--mono);font-size:13px;font-weight:500}
+.dp-pnl-value.pos{color:var(--green)}.dp-pnl-value.neg{color:var(--red)}
+.dp-observe-note{font-family:var(--mono);font-size:11px;color:var(--muted);
+  text-align:center;padding:10px;background:rgba(255,255,255,0.04);border-radius:10px}
+.btn-dp-remove{width:100%;background:var(--red-bg);border:1px solid rgba(232,80,74,0.25);
+  border-radius:12px;padding:12px;color:var(--red);font-family:var(--mono);
+  font-size:13px;cursor:pointer;margin-top:8px}
 .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(80px);
   background:#222233;border:1px solid var(--border2);border-radius:10px;padding:9px 18px;
   font-family:var(--mono);font-size:12px;color:var(--text);transition:transform .3s;
@@ -232,7 +294,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);
     <span class="header-sub" id="headerSub">—</span>
   </div>
   <div class="header-btns">
-    <button class="btn-hdr" onclick="refreshAll()" title="Aggiorna">
+    <button class="btn-hdr" id="refreshBtn" onclick="this.blur();refreshAll()" title="Aggiorna">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
     </button>
     <button class="btn-hdr" id="editBtn" onclick="toggleEdit()" title="Modifica">
@@ -354,6 +416,65 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);
   </div>
 </div>
 
+
+<!-- DETAIL PANEL -->
+<div class="detail-panel" id="detailPanel">
+  <div class="dp-header">
+    <button class="dp-back" onclick="closeDetail()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <div class="dp-title">
+      <div class="dp-name" id="dpName">—</div>
+      <div class="dp-sym" id="dpSym">—</div>
+    </div>
+    <div class="dp-avatar" id="dpAvatar">—</div>
+  </div>
+  <div class="dp-body">
+    <div class="dp-price-block">
+      <div class="dp-price" id="dpPrice">—</div>
+      <div class="dp-change" id="dpChange">—</div>
+      <div class="dp-currency" id="dpCurrency">—</div>
+    </div>
+    <div class="dp-grid">
+      <div class="dp-cell"><div class="dp-cell-label">Var. assoluta</div><div class="dp-cell-value" id="dpAbs">—</div></div>
+      <div class="dp-cell"><div class="dp-cell-label">Chius. prec.</div><div class="dp-cell-value" id="dpPrev">—</div></div>
+      <div class="dp-cell"><div class="dp-cell-label">Mercato</div><div class="dp-cell-value" id="dpExch">—</div></div>
+      <div class="dp-cell"><div class="dp-cell-label">Stato</div><div class="dp-cell-value" id="dpState">—</div></div>
+    </div>
+
+    <!-- SEZIONE PREZZO CARICO -->
+    <div class="dp-section-title">💼 Posizione personale</div>
+    <div class="dp-carico-box">
+      <div style="display:flex;gap:10px;margin-bottom:10px">
+        <div style="flex:1">
+          <div class="dp-carico-label">Prezzo medio di carico</div>
+          <input class="dp-carico-input" id="dpCarico" type="number" step="0.001" min="0" placeholder="Es. 14,50">
+        </div>
+        <div style="flex:1">
+          <div class="dp-carico-label">Quantità (opz.)</div>
+          <input class="dp-carico-input" id="dpQty" type="number" step="1" min="0" placeholder="Es. 100">
+        </div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn-dp" onclick="saveCarico()" style="flex:1">✓ Salva</button>
+        <button class="btn-dp sec" onclick="clearCarico()">✕ Rimuovi</button>
+      </div>
+    </div>
+
+    <!-- PnL calcolato -->
+    <div class="dp-pnl" id="dpPnlBox" style="display:none">
+      <div class="dp-section-title" style="margin-bottom:12px">📊 Performance</div>
+      <div class="dp-pnl-row"><span class="dp-pnl-label">Prezzo carico</span><span class="dp-pnl-value" id="dpCaricoPnl">—</span></div>
+      <div class="dp-pnl-row"><span class="dp-pnl-label">Prezzo attuale</span><span class="dp-pnl-value" id="dpPricePnl">—</span></div>
+      <div class="dp-pnl-row"><span class="dp-pnl-label">Variaz. da carico</span><span class="dp-pnl-value" id="dpDeltaPct">—</span></div>
+      <div class="dp-pnl-row" id="dpQtyRow" style="display:none"><span class="dp-pnl-label">Quantità</span><span class="dp-pnl-value" id="dpQtyPnl">—</span></div>
+      <div class="dp-pnl-row" id="dpPnlRow" style="display:none"><span class="dp-pnl-label">P&amp;L totale</span><span class="dp-pnl-value" id="dpPnlVal">—</span></div>
+      <div class="dp-pnl-row" id="dpValRow" style="display:none"><span class="dp-pnl-label">Valore posizione</span><span class="dp-pnl-value" id="dpValVal">—</span></div>
+    </div>
+
+    <button class="btn-dp-remove" id="dpRemoveBtn" onclick="removeFromDetail()">🗑 Rimuovi dal portafoglio</button>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -527,8 +648,10 @@ function stockRow(sym,d){
   '</div>';
   var ch=(d.price||0)-(d.prevClose||0),pct=d.prevClose?(ch/d.prevClose)*100:0;
   var pos=ch>0,neg=ch<0,sign=pos?'+':'',cls=pos?'pos':neg?'neg':'flat';
+  var safeOpen=sym.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
   var sn=d.name.length>24?d.name.substring(0,22)+'…':d.name;
-  return '<div class="stock-row" id="'+id+'" data-sym="'+sym+'">'+(editMode?'<div class="drag-handle">⠿</div>':'')+
+  var clickable=editMode?'':'onclick="openDetail(\''+safeOpen+'\')"';
+  return '<div class="stock-row" id="'+id+'" data-sym="'+sym+'" '+clickable+'>'+(editMode?'<div class="drag-handle">⠿</div>':'')+
     '<div class="avatar" style="background:'+aColor(sym)+'">'+aLetter(d.name,sym)+'</div>'+
     '<div class="row-info"><div class="row-name">'+sn+'</div><div class="row-sym">'+sym+'</div></div>'+
     '<div class="row-price"><div class="row-value">'+fmtP(d.price)+'</div>'+
@@ -586,11 +709,15 @@ async function fetchAndRender(sym){
 }
 
 async function refreshAll(){
+  var rb=document.getElementById('refreshBtn');
+  if(rb){rb.style.animation='spin .7s linear infinite';rb.style.color='var(--accent2)';}
   if(!workerUrl){renderList();return;}
   // Carica tutti in parallelo, ogni titolo si aggiorna appena arriva
   tickers.forEach(function(t){if(stockData[t]===undefined)updateRow(t);});
   await Promise.all(tickers.map(function(t){return fetchAndRender(t);}));
   updateMeta();resetCountdown();
+  var rb=document.getElementById('refreshBtn');
+  if(rb){rb.style.animation='';rb.style.color='';}
 }
 
 function resetCountdown(){
@@ -819,7 +946,8 @@ async function confirmPin(){
     currentPfId=id;currentPfName=name;currentPin=pin;
     savePfMeta();
     var saved=getSaved();
-    saved.push({id:id,name:name,pin:pin,tickers:tickers.slice()});
+    saved.push({id:id,name:name,pin:pin,tickers:[]});
+    tickers=[];
     setSaved(saved);saveLocal();
     var ok=await saveCloud();
     closeAllSheets();
@@ -888,6 +1016,115 @@ function removeTicker(sym){
   showToast('🗑 '+short+' rimosso');
 }
 
+
+/* ---- DETAIL PANEL ---- */
+var detailSym = '';
+
+function getCaricos(){try{return JSON.parse(localStorage.getItem('borsaCaricos')||'{}');}catch(e){return {};}}
+function setCaricos(o){try{localStorage.setItem('borsaCaricos',JSON.stringify(o));}catch(e){}}
+
+function openDetail(sym){
+  detailSym=sym;
+  var d=stockData[sym];
+  if(!d||d.error)return;
+
+  // Header
+  document.getElementById('dpName').textContent=d.name;
+  document.getElementById('dpSym').textContent=sym;
+  var av=document.getElementById('dpAvatar');
+  av.textContent=aLetter(d.name,sym);av.style.background=aColor(sym);
+
+  // Prezzo
+  var ch=(d.price||0)-(d.prevClose||0);
+  var pct=d.prevClose?(ch/d.prevClose)*100:0;
+  var pos=ch>0,neg=ch<0,sign=pos?'+':'',cls=pos?'pos':neg?'neg':'flat';
+  document.getElementById('dpPrice').textContent=fmtP(d.price);
+  var chEl=document.getElementById('dpChange');
+  chEl.textContent=sign+fmt(ch)+' ('+sign+fmt(pct)+'%)';
+  chEl.className='dp-change '+cls;
+  document.getElementById('dpCurrency').textContent=(d.currency||'')+(d.exchange?' · '+d.exchange:'')+(d.marketState&&d.marketState!=='REGULAR'?' · '+d.marketState:'');
+  document.getElementById('dpAbs').textContent=sign+fmt(ch);
+  document.getElementById('dpAbs').className='dp-cell-value '+(pos?'pos':neg?'neg':'');
+  document.getElementById('dpPrev').textContent=fmt(d.prevClose);
+  document.getElementById('dpExch').textContent=d.exchange||'—';
+  document.getElementById('dpState').textContent=d.marketState==='REGULAR'?'Aperto':d.marketState==='PRE'?'Pre-mkt':d.marketState==='POST'?'After-hrs':'Chiuso';
+
+  // Carico
+  var caricos=getCaricos();
+  var c=caricos[sym]||{};
+  document.getElementById('dpCarico').value=c.price||'';
+  document.getElementById('dpQty').value=c.qty||'';
+  renderPnl(sym,d,c);
+
+  // Apri panel
+  document.getElementById('detailPanel').classList.add('open');
+}
+
+function renderPnl(sym,d,c){
+  var box=document.getElementById('dpPnlBox');
+  if(!c||!c.price){box.style.display='none';return;}
+  box.style.display='block';
+  var carico=parseFloat(c.price);
+  if(isNaN(carico)||carico<=0){box.style.display='none';return;}
+  var delta=d.price-carico;
+  var deltaPct=(delta/carico)*100;
+  var pos=delta>=0,sign=pos?'+':'';
+  document.getElementById('dpCaricoPnl').textContent=fmt(carico);
+  document.getElementById('dpPricePnl').textContent=fmtP(d.price);
+  var dpEl=document.getElementById('dpDeltaPct');
+  dpEl.textContent=sign+fmt(delta)+' ('+sign+fmt(deltaPct)+'%)';
+  dpEl.className='dp-pnl-value '+(pos?'pos':'neg');
+
+  var qty=parseFloat(c.qty);
+  if(!isNaN(qty)&&qty>0){
+    document.getElementById('dpQtyRow').style.display='flex';
+    document.getElementById('dpQtyPnl').textContent=qty.toLocaleString('it-IT');
+    document.getElementById('dpPnlRow').style.display='flex';
+    var pnl=delta*qty;
+    var pnlEl=document.getElementById('dpPnlVal');
+    pnlEl.textContent=sign+fmt(pnl)+' '+( d.currency||'');
+    pnlEl.className='dp-pnl-value '+(pos?'pos':'neg');
+    document.getElementById('dpValRow').style.display='flex';
+    document.getElementById('dpValVal').textContent=fmt(d.price*qty)+' '+(d.currency||'');
+  }else{
+    document.getElementById('dpQtyRow').style.display='none';
+    document.getElementById('dpPnlRow').style.display='none';
+    document.getElementById('dpValRow').style.display='none';
+  }
+}
+
+function saveCarico(){
+  var price=parseFloat(document.getElementById('dpCarico').value);
+  var qty=parseFloat(document.getElementById('dpQty').value);
+  if(isNaN(price)||price<=0){showToast('⚠ Inserisci un prezzo valido');return;}
+  var caricos=getCaricos();
+  caricos[detailSym]={price:price,qty:isNaN(qty)||qty<=0?null:qty};
+  setCaricos(caricos);
+  // Aggiorna PnL
+  renderPnl(detailSym,stockData[detailSym],caricos[detailSym]);
+  showToast('✓ Prezzo di carico salvato');
+}
+
+function clearCarico(){
+  var caricos=getCaricos();
+  delete caricos[detailSym];
+  setCaricos(caricos);
+  document.getElementById('dpCarico').value='';
+  document.getElementById('dpQty').value='';
+  document.getElementById('dpPnlBox').style.display='none';
+  showToast('✓ Prezzo di carico rimosso');
+}
+
+function closeDetail(){
+  document.getElementById('detailPanel').classList.remove('open');
+  detailSym='';
+}
+
+function removeFromDetail(){
+  if(!detailSym)return;
+  removeTicker(detailSym);
+  closeDetail();
+}
 /* ---- TOAST ---- */
 function showToast(msg){
   var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
