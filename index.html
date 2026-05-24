@@ -27,6 +27,13 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);
   -webkit-font-smoothing:antialiased;touch-action:manipulation;
   overscroll-behavior:none;display:flex;flex-direction:column}
 
+/* ASSICURA L'EDITABILITÀ DEGLI INPUT SU MOBILE (TOUCH-ACTION E SELECTION) */
+input, select, textarea, .pf-rename-input, .pf-input, .sheet-input, .worker-input, .dp-carico-input {
+  -webkit-user-select: text !important;
+  user-select: text !important;
+  pointer-events: auto !important;
+}
+
 /* HEADER */
 .header{display:flex;align-items:center;justify-content:space-between;
   padding:16px 18px 12px;padding-top:calc(16px + env(safe-area-inset-top));flex-shrink:0}
@@ -36,7 +43,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);
 .header-sub{font-family:var(--mono);font-size:11px;color:var(--muted)}
 .header-btns{display:flex;align-items:center;gap:14px}
 
-/* PULSANTI HEADER FIX: Hover solo su desktop, classe spinning */
+/* PULSANTI HEADER */
 .btn-hdr{background:none;border:none;cursor:pointer;color:var(--muted);
   padding:4px;transition:color .15s;display:flex;align-items:center;
   -webkit-tap-highlight-color:transparent}
@@ -161,7 +168,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);
   padding:12px 14px;margin-bottom:8px;transition:border-color .15s}
 .pf-card.active-pf{border-color:var(--green)}
 .pf-card-top{display:flex;align-items:center;gap:10px}
-.pf-card-icon{font-size:24px;flex-shrink:0}
+.pf-card-icon{font-size:24px;flex-shrink:0;cursor:pointer}
 .pf-card-info{flex:1;min-width:0;cursor:pointer}
 .pf-card-name{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pf-card-meta{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:2px}
@@ -199,7 +206,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);
 .worker-setup a{color:var(--accent2)}
 .worker-setup code{background:rgba(255,255,255,0.08);padding:1px 5px;border-radius:3px}
 .worker-row{display:flex;gap:8px}
-.worker-input{flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(232,80,74,0.4);
+.worker-input{flex:1;background:rgba(255,255,256,0.06);border:1px solid rgba(232,80,74,0.4);
   border-radius:10px;padding:9px 12px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;min-width:0}
 .worker-input:focus{border-color:var(--accent)}
 .worker-btn{background:var(--accent);border:none;border-radius:10px;padding:9px 14px;
@@ -485,7 +492,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);
 
 <script>
 /* ================================================================
-   BORSA LIVE v9
+   BORSA LIVE v9.1
    Fix: aggiornamento immediato senza refresh, rinomina inline,
         sync portafoglio corrente prima di cambiare, UI touch
 ================================================================ */
@@ -514,11 +521,7 @@ function saveWorkerUrl(){
   document.getElementById('workerSetup').style.display='none';
   showToast('✓ Worker salvato!');closeAllSheets();refreshAll();
 }
-function initWorkerUI(){
-  var inp = document.getElementById('workerUrlInput');
-  if(inp && workerUrl) inp.value = workerUrl;
-  if(workerUrl)document.getElementById('workerSetup').style.display='none';
-}
+function initWorkerUI(){if(workerUrl)document.getElementById('workerSetup').style.display='none';}
 
 /* ---- PORTFOLIO STORAGE ---- */
 function getSaved(){try{return JSON.parse(localStorage.getItem('borsaSavedPf')||'[]');}catch(e){return[];}}
@@ -842,24 +845,24 @@ function renderPfList(){
   list.innerHTML=saved.map(function(pf){
     var isActive=pf.id===currentPfId;
     var safeId=pf.id.replace(/'/g,"\\'");
-    return '<div class="pf-card'+(isActive?' active-pf':'')+'" id="pfc-'+pf.id+'" data-pfid="'+pf.id+'">'+
+    return '<div class="pf-card'+(isActive?' active-pf':'')+'" id="pfc-'+pf.id+'" onclick="event.stopPropagation()">'+
       '<div class="pf-card-top">'+
-        '<div class="pf-card-icon" onclick="selectPf(\''+safeId+'\')">📊</div>'+
-        '<div class="pf-card-info" onclick="selectPf(\''+safeId+'\')">'+
-          '<div class="pf-card-name" id="pfname-'+pf.id+'">'+pf.name+'</div>'+
+        '<div class="pf-card-icon" onclick="selectPf(\''+safeId+'\'); event.stopPropagation();">📊</div>'+
+        '<div class="pf-card-info" onclick="selectPf(\''+safeId+'\'); event.stopPropagation();">'+
+          '<div class="pf-card-name">'+pf.name+'</div>'+
           '<div class="pf-card-meta">ID: <b style="font-family:var(--mono)">'+pf.id+'</b> · '+pf.tickers.length+' titoli</div>'+
         '</div>'+
         '<div class="pf-card-actions">'+
           (isActive?'<div class="pf-badge">attivo</div>':'')+
-          '<button class="btn-pf-sm" onclick="event.stopPropagation();startRename(\''+safeId+'\')">✏️</button>'+
-          '<button class="btn-pf-sm danger" onclick="event.stopPropagation();deletePf(\''+safeId+'\')">🗑</button>'+
+          '<button class="btn-pf-sm" onclick="startRename(\''+safeId+'\'); event.stopPropagation();">✏️</button>'+
+          '<button class="btn-pf-sm danger" onclick="deletePf(\''+safeId+'\'); event.stopPropagation();">🗑</button>'+
         '</div>'+
       '</div>'+
-      // Area rinomina (nascosta di default)
-      '<div class="pf-rename-row" id="rename-'+pf.id+'" style="display:none" onclick="event.stopPropagation()">'+
-        '<input class="pf-rename-input" id="rename-input-'+pf.id+'" value="'+pf.name+'" maxlength="30" onkeydown="if(event.key===\'Enter\'){event.preventDefault();confirmRename(\''+safeId+'\');}">'+
-        '<button class="btn-rename-ok" onclick="confirmRename(\''+safeId+'\')">✓</button>'+
-        '<button class="btn-rename-cancel" onclick="cancelRename(\''+safeId+'\')">✕</button>'+
+      // Area rinomina (con stop propagation per evitare intercettazioni degli eventi touch sul mobile)
+      '<div class="pf-rename-row" id="rename-'+pf.id+'" style="display:none" onclick="event.stopPropagation()" ontouchstart="event.stopPropagation()">'+
+        '<input class="pf-rename-input" id="rename-input-'+pf.id+'" value="'+pf.name+'" maxlength="30" onkeydown="if(event.key===\'Enter\')confirmRename(\''+safeId+'\')" onclick="event.stopPropagation()" ontouchstart="event.stopPropagation()">'+
+        '<button class="btn-rename-ok" onclick="confirmRename(\''+safeId+'\'); event.stopPropagation();">✓</button>'+
+        '<button class="btn-rename-cancel" onclick="cancelRename(\''+safeId+'\'); event.stopPropagation();">✕</button>'+
       '</div>'+
     '</div>';
   }).join('');
@@ -884,77 +887,54 @@ function selectPf(id){
 }
 
 function startRename(id){
-  // Nascondi altri rename aperti per evitare collisioni visive
-  document.querySelectorAll('.pf-card').forEach(function(card){
-    var renameRow = card.querySelector('.pf-rename-row');
-    var nameEl = card.querySelector('.pf-card-name');
-    if(renameRow) renameRow.style.display='none';
-    if(nameEl) nameEl.style.display='block';
+  // Nascondi altri rename aperti
+  document.querySelectorAll('[id^="rename-"]').forEach(function(el){
+    if(el.id!=='rename-'+id)el.style.display='none';
   });
-
-  var card = document.getElementById('pfc-' + id);
-  if(!card) return;
-
-  var nameEl = card.querySelector('.pf-card-name');
-  var renameRow = card.querySelector('.pf-rename-row');
-  var input = card.querySelector('.pf-rename-input');
-
-  if(renameRow && nameEl && input){
-    renameRow.style.display='flex';
-    nameEl.style.display='none'; // Nasconde il testo originario per far spazio all'input
-    var saved = getSaved();
-    var pf = saved.find(function(p){return p.id===id;});
-    if(pf) input.value = pf.name;
-    input.focus();
-    input.select();
+  var row=document.getElementById('rename-'+id);
+  if(!row)return;
+  row.style.display='flex';
+  
+  var inp=document.getElementById('rename-input-'+id);
+  if(inp){
+    // Utilizza un timeout per garantire che il browser mobile metta a fuoco l'input
+    setTimeout(function(){
+      inp.focus();
+      if (typeof inp.select === 'function') {
+        inp.select();
+      }
+      inp.setSelectionRange(0, inp.value.length);
+    }, 80);
   }
 }
 
 function cancelRename(id){
-  var card = document.getElementById('pfc-' + id);
-  if(!card) return;
-
-  var renameRow = card.querySelector('.pf-rename-row');
-  var nameEl = card.querySelector('.pf-card-name');
-
-  if(renameRow) renameRow.style.display='none';
-  if(nameEl) nameEl.style.display='block'; // Ripristina la visualizzazione del nome del portafoglio
+  var row=document.getElementById('rename-'+id);
+  if(row)row.style.display='none';
 }
 
 function confirmRename(id){
-  var card = document.getElementById('pfc-' + id);
-  if(!card) return;
-
-  var input = card.querySelector('.pf-rename-input');
-  if(!input) return;
-
-  var newName = input.value.trim();
+  var inp=document.getElementById('rename-input-'+id);
+  if(!inp)return;
+  var newName=inp.value.trim();
   if(!newName){showToast('⚠ Nome non valido');return;}
-
-  var saved = getSaved();
-  var i = saved.findIndex(function(p){return p.id===id;});
-  if(i===-1) return;
-
-  saved[i].name = newName;
-  setSaved(saved);
-
-  if(id === currentPfId){
-    currentPfName = newName;
-    savePfMeta();
-    var titleEl = document.getElementById('portfolioTitle');
-    if(titleEl) titleEl.textContent = newName;
+  var saved=getSaved();
+  var i=saved.findIndex(function(p){return p.id===id;});
+  if(i===-1)return;
+  saved[i].name=newName;setSaved(saved);
+  if(id===currentPfId){
+    currentPfName=newName;savePfMeta();
+    document.getElementById('portfolioTitle').textContent=newName;
     autoSave();
   }
-
   renderPfList();
-  showToast('✓ Rinominato "' + newName + '"');
+  showToast('✓ Rinominato "'+newName+'"');
 }
 
 function deletePf(id){
   var saved=getSaved();
   var pf=saved.find(function(p){return p.id===id;});
   if(!pf)return;
-  // Usa confirm solo su desktop; su mobile mostra comunque
   var ok=window.confirm?window.confirm('Eliminare "'+pf.name+'"?\nViene rimosso dal dispositivo.'):true;
   if(!ok)return;
   saved=saved.filter(function(p){return p.id!==id;});setSaved(saved);
