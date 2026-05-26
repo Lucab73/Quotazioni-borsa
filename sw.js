@@ -1,4 +1,4 @@
-const CACHE = 'borsa-live-v3';
+const CACHE = 'borsa-live-v4';
 const STATIC = [
   './index.html',
   './manifest.json',

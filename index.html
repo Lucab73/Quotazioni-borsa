@@ -575,10 +575,18 @@ function saveLocal(){
 /* ---- CLOUD ---- */
 async function saveCloud(){
   if(!workerUrl||!currentPfId||!currentPin)return false;
+  // Includi PMC e alert solo per i ticker di questo portafoglio
+  var allCaricos=getCaricos(),allAlerts=getLocalAlerts();
+  var pfCaricos={},pfAlerts={};
+  tickers.forEach(function(t){
+    if(allCaricos[t])pfCaricos[t]=allCaricos[t];
+    if(allAlerts[t])pfAlerts[t]=allAlerts[t];
+  });
   try{
     var r=await fetch(workerUrl+'?action=save',{method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({id:currentPfId,name:currentPfName,pin:currentPin,tickers:tickers})});
+      body:JSON.stringify({id:currentPfId,name:currentPfName,pin:currentPin,
+        tickers:tickers,caricos:pfCaricos,alerts:pfAlerts})});
     var j=await r.json();return j.ok===true;
   }catch(e){return false;}
 }
@@ -992,6 +1000,18 @@ async function confirmPin(){
     currentPfId=pf.id;currentPfName=pf.name;currentPin=pin;
     tickers=pf.tickers.slice();
     savePfMeta();saveLocal();
+    // Ripristina PMC e alert dal cloud
+    if(pf.caricos&&Object.keys(pf.caricos).length){
+      var allCaricos=getCaricos();
+      Object.keys(pf.caricos).forEach(function(t){allCaricos[t]=pf.caricos[t];});
+      setCaricos(allCaricos);
+    }
+    if(pf.alerts&&Object.keys(pf.alerts).length){
+      var allAlerts=getLocalAlerts();
+      Object.keys(pf.alerts).forEach(function(t){allAlerts[t]=pf.alerts[t];});
+      setLocalAlerts(allAlerts);
+      syncAlertsToWorker();
+    }
     var saved=getSaved();
     var ei=saved.findIndex(function(p){return p.id===pf.id;});
     if(ei===-1)saved.push({id:pf.id,name:pf.name,pin:pin,tickers:pf.tickers.slice()});
