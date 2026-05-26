@@ -275,6 +275,13 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);
   border-radius:12px;padding:12px;color:var(--red);font-family:var(--mono);
   font-size:13px;cursor:pointer;margin-top:8px}
 
+/* ALERT TP/SL */
+.dp-alert-box{background:var(--card);border-radius:14px;padding:16px;margin-bottom:16px}
+.dp-alert-row{display:flex;gap:10px;margin-bottom:10px}
+.dp-alert-status{font-family:var(--mono);font-size:11px;color:var(--green);
+  text-align:center;padding:6px 10px;background:var(--green-bg);
+  border-radius:8px;margin-top:8px;display:none}
+
 .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(80px);
   background:#222233;border:1px solid var(--border2);border-radius:10px;padding:9px 18px;
   font-family:var(--mono);font-size:12px;color:var(--text);
@@ -467,6 +474,26 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);
       <div class="dp-pnl-row" id="dpQtyRow" style="display:none"><span class="dp-pnl-label">Quantità</span><span class="dp-pnl-value" id="dpQtyPnl">—</span></div>
       <div class="dp-pnl-row" id="dpPnlRow" style="display:none"><span class="dp-pnl-label">P&amp;L totale</span><span class="dp-pnl-value" id="dpPnlVal">—</span></div>
       <div class="dp-pnl-row" id="dpValRow" style="display:none"><span class="dp-pnl-label">Valore posizione</span><span class="dp-pnl-value" id="dpValVal">—</span></div>
+    </div>
+
+    <!-- SEZIONE ALERT TP/SL -->
+    <div class="dp-section-title">🔔 Alert automatico</div>
+    <div class="dp-alert-box">
+      <div class="dp-alert-row">
+        <div style="flex:1">
+          <div class="dp-carico-label">🟢 Take Profit</div>
+          <input class="dp-carico-input" id="dpTp" type="number" step="0.01" min="0" placeholder="Es. 95000">
+        </div>
+        <div style="flex:1">
+          <div class="dp-carico-label">🔴 Stop Loss</div>
+          <input class="dp-carico-input" id="dpSl" type="number" step="0.01" min="0" placeholder="Es. 72000">
+        </div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn-dp" onclick="saveAlert()" style="flex:1">🔔 Salva alert</button>
+        <button class="btn-dp sec" onclick="clearAlert()">✕ Rimuovi</button>
+      </div>
+      <div class="dp-alert-status" id="dpAlertStatus">✓ Alert attivo — il Worker controllerà ogni ora</div>
     </div>
 
     <button class="btn-dp-remove" id="dpRemoveBtn" onclick="removeFromDetail()">🗑 Rimuovi dal portafoglio</button>
@@ -1057,6 +1084,13 @@ function openDetail(sym){
   document.getElementById('dpQty').value=c.qty||'';
   renderPnl(sym,d,c);
 
+  // Alert TP/SL
+  var localAlerts=getLocalAlerts();
+  var al=localAlerts[sym]||{};
+  document.getElementById('dpTp').value=al.tp!=null?al.tp:'';
+  document.getElementById('dpSl').value=al.sl!=null?al.sl:'';
+  document.getElementById('dpAlertStatus').style.display=(al.tp||al.sl)?'block':'none';
+
   // Apri panel
   document.getElementById('detailPanel').classList.add('open');
 }
@@ -1126,6 +1160,59 @@ function removeFromDetail(){
   removeTicker(detailSym);
   closeDetail();
 }
+/* ---- ALERTS TP/SL ---- */
+function getLocalAlerts(){try{return JSON.parse(localStorage.getItem('borsaAlerts')||'{}');}catch(e){return {};}}
+function setLocalAlerts(o){try{localStorage.setItem('borsaAlerts',JSON.stringify(o));}catch(e){}}
+
+/* Costruisce l'array completo e lo manda al Worker /alerts */
+async function syncAlertsToWorker(){
+  if(!workerUrl)return;
+  var localAlerts=getLocalAlerts();
+  var caricos=getCaricos();
+  var arr=Object.keys(localAlerts)
+    .map(function(sym){
+      var a=localAlerts[sym];
+      var c=caricos[sym]||{};
+      return{ticker:sym,tp:a.tp!=null?a.tp:null,sl:a.sl!=null?a.sl:null,pmc:c.price||null};
+    })
+    .filter(function(a){return a.tp!=null||a.sl!=null;});
+  try{
+    await fetch(workerUrl+'/alerts',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(arr)
+    });
+  }catch(e){/* worker non raggiunto, dati già salvati in locale */}
+}
+
+function saveAlert(){
+  var tp=document.getElementById('dpTp').value;
+  var sl=document.getElementById('dpSl').value;
+  var tpVal=tp!==''?parseFloat(tp):null;
+  var slVal=sl!==''?parseFloat(sl):null;
+  if(tpVal==null&&slVal==null){showToast('⚠ Inserisci almeno un valore');return;}
+  if(tpVal!=null&&(isNaN(tpVal)||tpVal<=0)){showToast('⚠ Take Profit non valido');return;}
+  if(slVal!=null&&(isNaN(slVal)||slVal<=0)){showToast('⚠ Stop Loss non valido');return;}
+  if(tpVal!=null&&slVal!=null&&slVal>=tpVal){showToast('⚠ SL deve essere minore del TP');return;}
+  var localAlerts=getLocalAlerts();
+  localAlerts[detailSym]={tp:tpVal,sl:slVal};
+  setLocalAlerts(localAlerts);
+  syncAlertsToWorker();
+  document.getElementById('dpAlertStatus').style.display='block';
+  showToast('🔔 Alert salvato per '+detailSym);
+}
+
+function clearAlert(){
+  var localAlerts=getLocalAlerts();
+  delete localAlerts[detailSym];
+  setLocalAlerts(localAlerts);
+  syncAlertsToWorker();
+  document.getElementById('dpTp').value='';
+  document.getElementById('dpSl').value='';
+  document.getElementById('dpAlertStatus').style.display='none';
+  showToast('✓ Alert rimosso');
+}
+
 /* ---- TOAST ---- */
 var _toastTimer = null;
 function showToast(msg, duration) {
