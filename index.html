@@ -12,6 +12,7 @@
 <meta name="theme-color" content="#0a0a0f">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -229,8 +230,35 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);
 .dp-avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;
   justify-content:center;font-size:18px;font-weight:700;color:#fff;flex-shrink:0}
 
-.dp-body{flex:1;overflow-y:auto;padding:18px;scrollbar-width:none}
-.dp-body::-webkit-scrollbar{display:none}
+.dp-body{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+/* TAB BAR */
+.dp-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;padding:0 4px}
+.dp-tab{flex:1;background:none;border:none;border-bottom:2px solid transparent;
+  padding:11px 4px;font-family:var(--mono);font-size:11px;color:var(--muted);
+  cursor:pointer;transition:all .15s;margin-bottom:-1px;
+  -webkit-tap-highlight-color:transparent;white-space:nowrap}
+.dp-tab.active{color:var(--accent2);border-bottom-color:var(--accent)}
+.dp-tab:active{opacity:.7}
+
+/* TAB CONTENT */
+.dp-tab-content{flex:1;overflow-y:auto;scrollbar-width:none;padding:0 18px 24px}
+.dp-tab-content::-webkit-scrollbar{display:none}
+
+/* RANGE SELECTOR */
+.dp-range-bar{display:flex;gap:5px;padding:14px 0 10px;flex-shrink:0}
+.dp-range{background:rgba(255,255,255,0.06);border:1px solid var(--border2);
+  border-radius:8px;padding:6px 0;font-family:var(--mono);font-size:11px;
+  color:var(--muted);cursor:pointer;transition:all .15s;flex:1;text-align:center}
+.dp-range.active{background:rgba(124,106,247,0.18);border-color:var(--accent);color:var(--accent2)}
+.dp-range:active{opacity:.7}
+
+/* CHART */
+.dp-chart-wrap{position:relative;height:210px;margin-bottom:16px}
+#dpChart{width:100%!important;height:100%!important}
+.dp-chart-loading{position:absolute;inset:0;display:flex;align-items:center;
+  justify-content:center;font-family:var(--mono);font-size:12px;color:var(--muted);
+  background:var(--bg)}
 
 /* Prezzo principale */
 .dp-price-block{text-align:center;padding:20px 0 24px}
@@ -433,71 +461,100 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);
     </div>
     <div class="dp-avatar" id="dpAvatar">—</div>
   </div>
-  <div class="dp-body">
-    <div class="dp-price-block">
-      <div class="dp-price" id="dpPrice">—</div>
-      <div class="dp-change" id="dpChange">—</div>
-      <div class="dp-currency" id="dpCurrency">—</div>
-    </div>
-    <div class="dp-grid">
-      <div class="dp-cell"><div class="dp-cell-label">Var. assoluta</div><div class="dp-cell-value" id="dpAbs">—</div></div>
-      <div class="dp-cell"><div class="dp-cell-label">Chius. prec.</div><div class="dp-cell-value" id="dpPrev">—</div></div>
-      <div class="dp-cell"><div class="dp-cell-label">Mercato</div><div class="dp-cell-value" id="dpExch">—</div></div>
-      <div class="dp-cell"><div class="dp-cell-label">Stato</div><div class="dp-cell-value" id="dpState">—</div></div>
-    </div>
 
-    <!-- SEZIONE PREZZO CARICO -->
-    <div class="dp-section-title">💼 Posizione personale</div>
-    <div class="dp-carico-box">
-      <div style="display:flex;gap:10px;margin-bottom:10px">
-        <div style="flex:1">
-          <div class="dp-carico-label">Prezzo medio di carico</div>
-          <input class="dp-carico-input" id="dpCarico" type="number" step="0.001" min="0" placeholder="Es. 14,50">
-        </div>
-        <div style="flex:1">
-          <div class="dp-carico-label">Quantità (opz.)</div>
-          <input class="dp-carico-input" id="dpQty" type="number" step="1" min="0" placeholder="Es. 100">
-        </div>
-      </div>
-      <div style="display:flex;gap:8px">
-        <button class="btn-dp" onclick="saveCarico()" style="flex:1">✓ Salva</button>
-        <button class="btn-dp sec" onclick="clearCarico()">✕ Rimuovi</button>
-      </div>
-    </div>
-
-    <!-- PnL calcolato -->
-    <div class="dp-pnl" id="dpPnlBox" style="display:none">
-      <div class="dp-section-title" style="margin-bottom:12px">📊 Performance</div>
-      <div class="dp-pnl-row"><span class="dp-pnl-label">Prezzo carico</span><span class="dp-pnl-value" id="dpCaricoPnl">—</span></div>
-      <div class="dp-pnl-row"><span class="dp-pnl-label">Prezzo attuale</span><span class="dp-pnl-value" id="dpPricePnl">—</span></div>
-      <div class="dp-pnl-row"><span class="dp-pnl-label">Variaz. da carico</span><span class="dp-pnl-value" id="dpDeltaPct">—</span></div>
-      <div class="dp-pnl-row" id="dpQtyRow" style="display:none"><span class="dp-pnl-label">Quantità</span><span class="dp-pnl-value" id="dpQtyPnl">—</span></div>
-      <div class="dp-pnl-row" id="dpPnlRow" style="display:none"><span class="dp-pnl-label">P&amp;L totale</span><span class="dp-pnl-value" id="dpPnlVal">—</span></div>
-      <div class="dp-pnl-row" id="dpValRow" style="display:none"><span class="dp-pnl-label">Valore posizione</span><span class="dp-pnl-value" id="dpValVal">—</span></div>
-    </div>
-
-    <!-- SEZIONE ALERT TP/SL -->
-    <div class="dp-section-title">🔔 Alert automatico</div>
-    <div class="dp-alert-box">
-      <div class="dp-alert-row">
-        <div style="flex:1">
-          <div class="dp-carico-label">🟢 Take Profit</div>
-          <input class="dp-carico-input" id="dpTp" type="number" step="0.01" min="0" placeholder="Es. 95000">
-        </div>
-        <div style="flex:1">
-          <div class="dp-carico-label">🔴 Stop Loss</div>
-          <input class="dp-carico-input" id="dpSl" type="number" step="0.01" min="0" placeholder="Es. 72000">
-        </div>
-      </div>
-      <div style="display:flex;gap:8px">
-        <button class="btn-dp" onclick="saveAlert()" style="flex:1">🔔 Salva alert</button>
-        <button class="btn-dp sec" onclick="clearAlert()">✕ Rimuovi</button>
-      </div>
-      <div class="dp-alert-status" id="dpAlertStatus">✓ Alert attivo — il Worker controllerà ogni ora</div>
-    </div>
-
-    <button class="btn-dp-remove" id="dpRemoveBtn" onclick="removeFromDetail()">🗑 Rimuovi dal portafoglio</button>
+  <!-- Prezzo sempre visibile sopra i tab -->
+  <div class="dp-price-block" style="padding:16px 18px 14px;flex-shrink:0">
+    <div class="dp-price" id="dpPrice">—</div>
+    <div class="dp-change" id="dpChange">—</div>
+    <div class="dp-currency" id="dpCurrency">—</div>
   </div>
+
+  <!-- TAB BAR -->
+  <div class="dp-tabs">
+    <button class="dp-tab active" id="dpTabBtnChart" onclick="switchDpTab('Chart')">📊 Grafico</button>
+    <button class="dp-tab" id="dpTabBtnAlert" onclick="switchDpTab('Alert')">🔔 Alert</button>
+    <button class="dp-tab" id="dpTabBtnPos" onclick="switchDpTab('Pos')">💼 Posizione</button>
+  </div>
+
+  <div class="dp-body">
+
+    <!-- ── TAB GRAFICO ── -->
+    <div class="dp-tab-content" id="dpTabChart">
+      <div class="dp-range-bar">
+        <button class="dp-range active" data-range="5d" data-interval="15m" onclick="setChartRange(this)">1S</button>
+        <button class="dp-range" data-range="1mo" data-interval="1d" onclick="setChartRange(this)">1M</button>
+        <button class="dp-range" data-range="3mo" data-interval="1d" onclick="setChartRange(this)">3M</button>
+        <button class="dp-range" data-range="6mo" data-interval="1d" onclick="setChartRange(this)">6M</button>
+        <button class="dp-range" data-range="1y" data-interval="1d" onclick="setChartRange(this)">1A</button>
+        <button class="dp-range" data-range="5y" data-interval="1wk" onclick="setChartRange(this)">5A</button>
+      </div>
+      <div class="dp-chart-wrap">
+        <canvas id="dpChart"></canvas>
+        <div class="dp-chart-loading" id="dpChartLoading">Caricamento…</div>
+      </div>
+      <!-- Info grid sotto il grafico -->
+      <div class="dp-grid">
+        <div class="dp-cell"><div class="dp-cell-label">Var. assoluta</div><div class="dp-cell-value" id="dpAbs">—</div></div>
+        <div class="dp-cell"><div class="dp-cell-label">Chius. prec.</div><div class="dp-cell-value" id="dpPrev">—</div></div>
+        <div class="dp-cell"><div class="dp-cell-label">Mercato</div><div class="dp-cell-value" id="dpExch">—</div></div>
+        <div class="dp-cell"><div class="dp-cell-label">Stato</div><div class="dp-cell-value" id="dpState">—</div></div>
+      </div>
+    </div>
+
+    <!-- ── TAB ALERT ── -->
+    <div class="dp-tab-content" id="dpTabAlert" style="display:none">
+      <div class="dp-section-title" style="padding-top:16px">🔔 Alert automatico</div>
+      <div class="dp-alert-box">
+        <div class="dp-alert-row">
+          <div style="flex:1">
+            <div class="dp-carico-label">🟢 Take Profit</div>
+            <input class="dp-carico-input" id="dpTp" type="number" step="0.01" min="0" placeholder="Es. 95000">
+          </div>
+          <div style="flex:1">
+            <div class="dp-carico-label">🔴 Stop Loss</div>
+            <input class="dp-carico-input" id="dpSl" type="number" step="0.01" min="0" placeholder="Es. 72000">
+          </div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn-dp" onclick="saveAlert()" style="flex:1">🔔 Salva alert</button>
+          <button class="btn-dp sec" onclick="clearAlert()">✕ Rimuovi</button>
+        </div>
+        <div class="dp-alert-status" id="dpAlertStatus">✓ Alert attivo — il Worker controllerà ogni ora</div>
+      </div>
+      <button class="btn-dp-remove" onclick="removeFromDetail()">🗑 Rimuovi dal portafoglio</button>
+    </div>
+
+    <!-- ── TAB POSIZIONE ── -->
+    <div class="dp-tab-content" id="dpTabPos" style="display:none">
+      <div class="dp-section-title" style="padding-top:16px">💼 Posizione personale</div>
+      <div class="dp-carico-box">
+        <div style="display:flex;gap:10px;margin-bottom:10px">
+          <div style="flex:1">
+            <div class="dp-carico-label">Prezzo medio di carico</div>
+            <input class="dp-carico-input" id="dpCarico" type="number" step="0.001" min="0" placeholder="Es. 14,50">
+          </div>
+          <div style="flex:1">
+            <div class="dp-carico-label">Quantità (opz.)</div>
+            <input class="dp-carico-input" id="dpQty" type="number" step="1" min="0" placeholder="Es. 100">
+          </div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn-dp" onclick="saveCarico()" style="flex:1">✓ Salva</button>
+          <button class="btn-dp sec" onclick="clearCarico()">✕ Rimuovi</button>
+        </div>
+      </div>
+      <div class="dp-pnl" id="dpPnlBox" style="display:none">
+        <div class="dp-section-title" style="margin-bottom:12px">📊 Performance</div>
+        <div class="dp-pnl-row"><span class="dp-pnl-label">Prezzo carico</span><span class="dp-pnl-value" id="dpCaricoPnl">—</span></div>
+        <div class="dp-pnl-row"><span class="dp-pnl-label">Prezzo attuale</span><span class="dp-pnl-value" id="dpPricePnl">—</span></div>
+        <div class="dp-pnl-row"><span class="dp-pnl-label">Variaz. da carico</span><span class="dp-pnl-value" id="dpDeltaPct">—</span></div>
+        <div class="dp-pnl-row" id="dpQtyRow" style="display:none"><span class="dp-pnl-label">Quantità</span><span class="dp-pnl-value" id="dpQtyPnl">—</span></div>
+        <div class="dp-pnl-row" id="dpPnlRow" style="display:none"><span class="dp-pnl-label">P&amp;L totale</span><span class="dp-pnl-value" id="dpPnlVal">—</span></div>
+        <div class="dp-pnl-row" id="dpValRow" style="display:none"><span class="dp-pnl-label">Valore posizione</span><span class="dp-pnl-value" id="dpValVal">—</span></div>
+      </div>
+    </div>
+
+  </div><!-- /dp-body -->
 </div>
 <div class="toast" id="toast"></div>
 
@@ -1111,6 +1168,14 @@ function openDetail(sym){
   document.getElementById('dpSl').value=al.sl!=null?al.sl:'';
   document.getElementById('dpAlertStatus').style.display=(al.tp||al.sl)?'block':'none';
 
+  // Resetta al tab grafico e carica subito
+  switchDpTab('Chart');
+  // Reset range al default 1S
+  document.querySelectorAll('.dp-range').forEach(function(b){b.classList.remove('active');});
+  var firstRange=document.querySelector('.dp-range');if(firstRange)firstRange.classList.add('active');
+  dpChartRange='5d';dpChartInterval='15m';
+  loadChart(sym,'5d','15m');
+
   // Apri panel
   document.getElementById('detailPanel').classList.add('open');
 }
@@ -1168,6 +1233,130 @@ function clearCarico(){
   document.getElementById('dpQty').value='';
   document.getElementById('dpPnlBox').style.display='none';
   showToast('✓ Prezzo di carico rimosso');
+}
+
+/* ---- TAB SWITCHING ---- */
+function switchDpTab(tab){
+  ['Chart','Alert','Pos'].forEach(function(t){
+    var btn=document.getElementById('dpTabBtn'+t);
+    var pane=document.getElementById('dpTab'+t);
+    var on=t===tab;
+    if(btn)btn.classList.toggle('active',on);
+    if(pane)pane.style.display=on?'block':'none';
+  });
+}
+
+/* ---- GRAFICO STORICO ---- */
+var dpChartInst=null,dpChartRange='5d',dpChartInterval='15m';
+
+function setChartRange(btn){
+  document.querySelectorAll('.dp-range').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  dpChartRange=btn.dataset.range;
+  dpChartInterval=btn.dataset.interval;
+  loadChart(detailSym,dpChartRange,dpChartInterval);
+}
+
+async function loadChart(sym,range,interval){
+  if(!workerUrl)return;
+  var loading=document.getElementById('dpChartLoading');
+  if(loading){loading.style.display='flex';loading.textContent='Caricamento…';}
+  // Distruggi grafico precedente mentre carica
+  if(dpChartInst){dpChartInst.destroy();dpChartInst=null;}
+  try{
+    var url=workerUrl+'?s='+encodeURIComponent(sym)+'&range='+range+'&interval='+interval;
+    var resp=await fetch(url,{signal:AbortSignal.timeout(12000)});
+    var j=await resp.json();
+    var res=j.chart&&j.chart.result&&j.chart.result[0];
+    if(!res||!res.timestamp){if(loading){loading.textContent='Dati non disponibili';}return;}
+    var timestamps=res.timestamp||[];
+    var closes=(res.indicators&&res.indicators.quote&&res.indicators.quote[0]&&res.indicators.quote[0].close)||[];
+    var points=[];
+    timestamps.forEach(function(ts,i){if(closes[i]!=null)points.push({ts:ts*1000,v:closes[i]});});
+    if(!points.length){if(loading)loading.textContent='Dati non disponibili';return;}
+    if(loading)loading.style.display='none';
+    renderChart(points,range);
+  }catch(e){
+    if(loading){loading.style.display='flex';loading.textContent='Errore caricamento';}
+  }
+}
+
+function renderChart(points,range){
+  var canvas=document.getElementById('dpChart');
+  if(!canvas||typeof Chart==='undefined')return;
+  if(dpChartInst){dpChartInst.destroy();dpChartInst=null;}
+
+  var first=points[0].v,last=points[points.length-1].v;
+  var isUp=last>=first;
+  var color=isUp?'#22c97a':'#e8504a';
+
+  var labels=points.map(function(p){
+    var d=new Date(p.ts);
+    if(range==='5d')return d.toLocaleDateString('it-IT',{weekday:'short'})+' '+d.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
+    if(range==='1mo'||range==='3mo')return d.toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit'});
+    if(range==='6mo'||range==='1y')return d.toLocaleDateString('it-IT',{month:'short',year:'2-digit'});
+    return d.toLocaleDateString('it-IT',{month:'short',year:'2-digit'});
+  });
+  var data=points.map(function(p){return p.v;});
+
+  dpChartInst=new Chart(canvas,{
+    type:'line',
+    data:{
+      labels:labels,
+      datasets:[{
+        data:data,
+        borderColor:color,
+        borderWidth:2,
+        pointRadius:0,
+        pointHoverRadius:4,
+        pointHoverBackgroundColor:color,
+        fill:true,
+        backgroundColor:function(ctx){
+          var g=ctx.chart.ctx.createLinearGradient(0,0,0,200);
+          g.addColorStop(0,isUp?'rgba(34,201,122,0.20)':'rgba(232,80,74,0.20)');
+          g.addColorStop(1,'rgba(15,15,20,0)');
+          return g;
+        },
+        tension:0.3
+      }]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      animation:{duration:350},
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:'#1a1a24',
+          borderColor:'rgba(255,255,255,0.11)',
+          borderWidth:1,
+          titleColor:'#6a6a82',
+          bodyColor:'#f0f0f8',
+          bodyFont:{family:"'DM Mono',monospace",size:12},
+          titleFont:{family:"'DM Mono',monospace",size:10},
+          padding:10,
+          callbacks:{
+            label:function(ctx){return ' '+fmtP(ctx.parsed.y);}
+          }
+        }
+      },
+      scales:{
+        x:{
+          ticks:{color:'#6a6a82',font:{family:"'DM Mono',monospace",size:9},maxTicksLimit:5,maxRotation:0},
+          grid:{display:false},
+          border:{display:false}
+        },
+        y:{
+          position:'right',
+          ticks:{color:'#6a6a82',font:{family:"'DM Mono',monospace",size:9},maxTicksLimit:5,
+            callback:function(v){return fmtP(v);}},
+          grid:{color:'rgba(255,255,255,0.04)'},
+          border:{display:false}
+        }
+      }
+    }
+  });
 }
 
 function closeDetail(){

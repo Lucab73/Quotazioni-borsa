@@ -309,14 +309,9 @@ export default {
     if (action === 'save' && request.method === 'POST') {
       try {
         const body = await request.json();
-        const { id, name, pin, tickers, caricos, alerts } = body;
+        const { id, name, pin, tickers } = body;
         if (!id || !name || !pin || !Array.isArray(tickers)) return json({ error: 'Missing fields' }, 400);
-        if (env.KV) await env.KV.put('portfolio:' + id, JSON.stringify({
-          id, name, pin, tickers,
-          caricos: caricos || {},
-          alerts:  alerts  || {},
-          updatedAt: new Date().toISOString()
-        }));
+        if (env.KV) await env.KV.put('portfolio:' + id, JSON.stringify({ id, name, pin, tickers, updatedAt: new Date().toISOString() }));
         return json({ ok: true, id });
       } catch (e) { return json({ error: e.message }, 500); }
     }
@@ -330,13 +325,7 @@ export default {
       if (!raw) return json({ error: 'Not found' }, 404);
       const data = JSON.parse(raw);
       if (data.pin !== pin) return json({ error: 'Wrong PIN' }, 401);
-      return json({ ok: true, portfolio: {
-        id:      data.id,
-        name:    data.name,
-        tickers: data.tickers,
-        caricos: data.caricos || {},
-        alerts:  data.alerts  || {},
-      }});
+      return json({ ok: true, portfolio: { id: data.id, name: data.name, tickers: data.tickers } });
     }
 
     // ── ALERT: leggi ──────────────────────────────────────────────────────
@@ -394,8 +383,10 @@ export default {
     }
 
     // Ticker standard (AAPL, ENI.MI, BTC-USD …)
+    const range    = url.searchParams.get('range')    || '1d';
+    const interval = url.searchParams.get('interval') || '5m';
     const yfUrl = 'https://query1.finance.yahoo.com/v8/finance/chart/' +
-      encodeURIComponent(symUpper) + '?interval=5m&range=1d&includePrePost=false';
+      encodeURIComponent(symUpper) + '?interval='+interval+'&range='+range+'&includePrePost=false';
     const resp = await fetch(yfUrl, { headers: { 'User-Agent': BROWSER_HEADERS['User-Agent'] } });
     return new Response(await resp.text(), {
       status: resp.status,
